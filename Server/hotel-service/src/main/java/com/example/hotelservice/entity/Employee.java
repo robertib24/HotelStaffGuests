@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,5 +26,12 @@ public class Employee {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @OneToMany(
+            mappedBy = "managedByEmployee",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Room> managedRooms = new ArrayList<>();
 
 }

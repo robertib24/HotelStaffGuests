@@ -35,4 +35,8 @@ public class Room {
     )
     private List<Guest> guests = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id")
+    private Employee managedByEmployee;
+
 }
