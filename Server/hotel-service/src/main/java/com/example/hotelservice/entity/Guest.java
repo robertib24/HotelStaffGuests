@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,6 +25,9 @@ public class Guest {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(name = "check_in_date")
+    private LocalDate checkInDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
