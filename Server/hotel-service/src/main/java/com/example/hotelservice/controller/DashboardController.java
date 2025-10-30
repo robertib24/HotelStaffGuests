@@ -3,6 +3,7 @@ package com.example.hotelservice.controller;
 import com.example.hotelservice.dto.DashboardStatsDTO;
 import com.example.hotelservice.repository.EmployeeRepository;
 import com.example.hotelservice.repository.GuestRepository;
+import com.example.hotelservice.repository.ReservationRepository;
 import com.example.hotelservice.repository.RoomRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,13 +24,16 @@ public class DashboardController {
     private final EmployeeRepository employeeRepository;
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
+    private final ReservationRepository reservationRepository;
 
     public DashboardController(EmployeeRepository employeeRepository,
                                GuestRepository guestRepository,
-                               RoomRepository roomRepository) {
+                               RoomRepository roomRepository,
+                               ReservationRepository reservationRepository) {
         this.employeeRepository = employeeRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
+        this.reservationRepository = reservationRepository; // AM ADĂUGAT
     }
 
     @GetMapping("/stats")
@@ -51,7 +55,7 @@ public class DashboardController {
     private List<Map<String, Object>> getWeeklyGuestData() {
         LocalDate startDate = LocalDate.now().minusDays(6);
 
-        List<Object[]> queryResults = guestRepository.getGuestCountPerDay(startDate);
+        List<Object[]> queryResults = reservationRepository.getCheckInsPerDay(startDate);
 
         Map<LocalDate, Long> countsByDate = queryResults.stream()
                 .collect(Collectors.toMap(
@@ -60,17 +64,13 @@ public class DashboardController {
                 ));
 
         Map<String, Object> weeklyGuestMap = new LinkedHashMap<>();
-
         Locale romanianLocale = new Locale("ro", "RO");
 
         for (int i = 0; i < 7; i++) {
             LocalDate date = startDate.plusDays(i);
-
             String dayName = date.getDayOfWeek().getDisplayName(TextStyle.SHORT, romanianLocale);
             dayName = dayName.substring(0, 1).toUpperCase() + dayName.substring(1);
-
             long count = countsByDate.getOrDefault(date, 0L);
-
             weeklyGuestMap.put(dayName, count);
         }
 

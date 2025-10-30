@@ -28,12 +28,8 @@ public class Room {
     @Column(nullable = false)
     private double price;
 
-    @OneToMany(
-            mappedBy = "room",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<Guest> guests = new ArrayList<>();
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reservation> reservations = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
