@@ -6,6 +6,7 @@ import com.example.hotelservice.repository.GuestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,10 +17,11 @@ public class GuestController {
     @Autowired
     private GuestRepository guestRepository;
 
-    // ----- ENDPOINT-URI CRUD (3) -----
-
     @PostMapping
     public Guest createGuest(@RequestBody Guest guest) {
+        if (guest.getCheckInDate() == null) {
+            guest.setCheckInDate(LocalDate.now());
+        }
         return guestRepository.save(guest);
     }
 
@@ -32,8 +34,6 @@ public class GuestController {
     public Guest getGuestById(@PathVariable Long id) {
         return guestRepository.findById(id).orElse(null);
     }
-
-    // ----- ENDPOINT CUSTOM (1) -----
 
     @GetMapping("/reports/by-room-type")
     public List<GuestsPerRoomTypeDTO> getGuestsPerRoomType() {
