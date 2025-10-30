@@ -19,9 +19,12 @@ function Layout() {
 
     const getPageTitle = (path) => {
         switch (path) {
+            case '/reservations/new': return 'Creare Rezervare Nouă';
+            case '/reservations': return 'Management Rezervări';
             case '/employees': return 'Management Angajați';
             case '/guests': return 'Management Oaspeți';
             case '/rooms': return 'Management Camere';
+            case '/reports': return 'Rapoarte Financiare';
             default: return 'Dashboard General';
         }
     };

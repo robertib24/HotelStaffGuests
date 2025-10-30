@@ -4,6 +4,7 @@ import com.example.hotelservice.dto.EmployeeRoleCountDTO;
 import com.example.hotelservice.entity.Employee;
 import com.example.hotelservice.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,10 +17,12 @@ public class EmployeeController {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    // ----- ENDPOINT-URI CRUD (5) -----
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping
     public Employee createEmployee(@RequestBody Employee employee) {
+        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         return employeeRepository.save(employee);
     }
 
@@ -46,8 +49,6 @@ public class EmployeeController {
     public void deleteEmployee(@PathVariable Long id) {
         employeeRepository.deleteById(id);
     }
-
-    // ----- ENDPOINT CUSTOM (1) -----
 
     @GetMapping("/reports/role-count")
     public List<EmployeeRoleCountDTO> getEmployeesPerRoleCount() {
