@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Avatar } from '@mui/material';
-import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import { motion } from 'framer-motion';
 import PersonIcon from '@mui/icons-material/Person';
 import AddGuestModal from './components/AddGuestModal';
@@ -12,9 +14,10 @@ function GuestList() {
     const [guests, setGuests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
+    const [editingGuest, setEditingGuest] = useState(null);
     const auth = useAuth();
 
-    const fetchGuests = async () => {
+    const fetchGuests = useCallback(async () => {
         setLoading(true);
         try {
             const response = await axios.get('http://localhost:8080/api/guests', {
@@ -26,21 +29,56 @@ function GuestList() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [auth.token]);
 
     useEffect(() => {
         if (auth.token) fetchGuests();
-    }, [auth.token]);
+    }, [auth.token, fetchGuests]);
 
-    const handleSaveGuest = async (guestData) => {
+    const handleSaveGuest = async (guestData, isEditing) => {
         try {
-            await axios.post('http://localhost:8080/api/guests', guestData, {
-                headers: { 'Authorization': `Bearer ${auth.token}` }
-            });
+            if (isEditing) {
+                await axios.put(`http://localhost:8080/api/guests/${guestData.id}`, guestData, {
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                });
+            } else {
+                await axios.post('http://localhost:8080/api/guests', guestData, {
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                });
+            }
             fetchGuests();
         } catch (error) {
             console.error('Eroare la salvarea oaspetelui:', error);
         }
+    };
+
+    const handleEditClick = (id) => {
+        const guestToEdit = guests.find((guest) => guest.id === id);
+        setEditingGuest(guestToEdit);
+        setModalOpen(true);
+    };
+
+    const handleDeleteClick = useCallback(async (id) => {
+        if (window.confirm('Sunteți sigur că doriți să ștergeți acest oaspete?')) {
+            try {
+                await axios.delete(`http://localhost:8080/api/guests/${id}`, {
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                });
+                fetchGuests();
+            } catch (error) {
+                console.error('Eroare la ștergerea oaspetelui:', error);
+            }
+        }
+    }, [auth.token, fetchGuests]);
+
+    const handleOpenAddModal = () => {
+        setEditingGuest(null);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setEditingGuest(null);
     };
 
     const columns = [
@@ -57,20 +95,22 @@ function GuestList() {
             flex: 1.5, 
             minWidth: 220,
             renderCell: (params) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar
-                        sx={{
-                            width: 36,
-                            height: 36,
-                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                            fontSize: '0.875rem',
-                        }}
-                    >
-                        <PersonIcon />
-                    </Avatar>
-                    <Typography variant="body2" fontWeight={500}>
-                        {params.value}
-                    </Typography>
+                <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Avatar
+                            sx={{
+                                width: 36,
+                                height: 36,
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                fontSize: '0.875rem',
+                            }}
+                        >
+                            <PersonIcon />
+                        </Avatar>
+                        <Typography variant="body2" fontWeight={500}>
+                            {params.value}
+                        </Typography>
+                    </Box>
                 </Box>
             )
         },
@@ -84,6 +124,29 @@ function GuestList() {
                     {params.value}
                 </Typography>
             )
+        },
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Acțiuni',
+            width: 100,
+            cellClassName: 'actions',
+            getActions: ({ id }) => {
+                return [
+                    <GridActionsCellItem
+                        icon={<EditIcon />}
+                        label="Modifică"
+                        onClick={() => handleEditClick(id)}
+                        color="inherit"
+                    />,
+                    <GridActionsCellItem
+                        icon={<DeleteIcon />}
+                        label="Șterge"
+                        onClick={() => handleDeleteClick(id)}
+                        color="inherit"
+                    />,
+                ];
+            },
         },
     ];
 
@@ -116,7 +179,7 @@ function GuestList() {
                             <Button 
                                 variant="contained" 
                                 startIcon={<AddIcon />}
-                                onClick={() => setModalOpen(true)}
+                                onClick={handleOpenAddModal}
                                 sx={{
                                     background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                     boxShadow: '0 4px 20px rgba(16, 185, 129, 0.4)',
@@ -161,8 +224,9 @@ function GuestList() {
             </motion.div>
             <AddGuestModal
                 open={modalOpen}
-                onClose={() => setModalOpen(false)}
+                onClose={handleCloseModal}
                 onSave={handleSaveGuest}
+                initialData={editingGuest}
             />
         </>
     );

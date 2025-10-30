@@ -1,24 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box } from '@mui/material';
 
-function AddGuestModal({ open, onClose, onSave }) {
+function AddGuestModal({ open, onClose, onSave, initialData }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
 
-    const clearForm = () => {
-        setName('');
-        setEmail('');
-    };
+    const isEditing = initialData != null;
+
+    useEffect(() => {
+        if (isEditing) {
+            setName(initialData.name);
+            setEmail(initialData.email);
+        } else {
+            setName('');
+            setEmail('');
+        }
+    }, [initialData, open, isEditing]);
 
     const handleSubmit = () => {
-        onSave({ name, email });
+        const guestData = { ...initialData, name, email };
+        onSave(guestData, isEditing);
         onClose();
-        clearForm();
     };
 
     return (
         <Dialog open={open} onClose={onClose} PaperProps={{ component: 'form' }} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-            <DialogTitle sx={{ fontWeight: 'bold' }}>Adaugă Oaspete Nou</DialogTitle>
+            <DialogTitle sx={{ fontWeight: 'bold' }}>
+                {isEditing ? 'Modifică Oaspete' : 'Adaugă Oaspete Nou'}
+            </DialogTitle>
             <DialogContent>
                 <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <TextField

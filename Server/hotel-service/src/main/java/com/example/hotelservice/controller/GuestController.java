@@ -36,6 +36,19 @@ public class GuestController {
         return guestRepository.findById(id).orElse(null);
     }
 
+    @PutMapping("/{id}")
+    public Guest updateGuest(@PathVariable Long id, @RequestBody Guest guestDetails) {
+        Guest guest = guestRepository.findById(id).orElseThrow();
+        guest.setName(guestDetails.getName());
+        guest.setEmail(guestDetails.getEmail());
+        return guestRepository.save(guest);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteGuest(@PathVariable Long id) {
+        guestRepository.deleteById(id);
+    }
+
     @GetMapping("/reports/by-room-type")
     public List<GuestsPerRoomTypeDTO> getGuestsPerRoomType() {
         return reservationRepository.getGuestsPerRoomType().stream()

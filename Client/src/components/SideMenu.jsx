@@ -7,14 +7,12 @@ import BadgeIcon from '@mui/icons-material/BadgeOutlined';
 import HomeIcon from '@mui/icons-material/DashboardOutlined';
 import HotelIcon from '@mui/icons-material/NightShelter';
 import AssessmentIcon from '@mui/icons-material/AssessmentOutlined';
-import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import ListAltIcon from '@mui/icons-material/ListAltOutlined';
 
 const drawerWidth = 260;
 
 const menuItems = [
     { text: 'Dashboard', icon: <HomeIcon />, path: '/' },
-    { text: 'Rezervare Nouă', icon: <CalendarMonthOutlinedIcon />, path: '/reservations/new' },
     { text: 'Rezervări', icon: <ListAltIcon />, path: '/reservations' },
     { text: 'Angajați', icon: <BadgeIcon />, path: '/employees' },
     { text: 'Oaspeți', icon: <PeopleIcon />, path: '/guests' },
@@ -51,7 +49,7 @@ function SideMenu() {
                             <ListItemButton
                                 component={Link}
                                 to={item.path}
-                                selected={location.pathname === item.path || (item.path === '/reservations' && location.pathname.startsWith('/reservations/'))}
+                                selected={location.pathname.startsWith(item.path)}
                                 sx={{
                                     borderRadius: 2,
                                     '&.Mui-selected': {

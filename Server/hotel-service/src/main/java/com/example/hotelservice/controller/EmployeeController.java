@@ -42,6 +42,11 @@ public class EmployeeController {
         employee.setName(employeeDetails.getName());
         employee.setRole(employeeDetails.getRole());
         employee.setEmail(employeeDetails.getEmail());
+
+        if (employeeDetails.getPassword() != null && !employeeDetails.getPassword().isEmpty()) {
+            employee.setPassword(passwordEncoder.encode(employeeDetails.getPassword()));
+        }
+
         return employeeRepository.save(employee);
     }
 

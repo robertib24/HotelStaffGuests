@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, MenuItem } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Box, MenuItem, Typography } from '@mui/material';
 
-function AddEmployeeModal({ open, onClose, onSave }) {
+function AddEmployeeModal({ open, onClose, onSave, initialData }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('Receptionist');
+
+    const isEditing = initialData != null;
+
+    useEffect(() => {
+        if (isEditing) {
+            setName(initialData.name);
+            setEmail(initialData.email);
+            setRole(initialData.role);
+            setPassword('');
+        } else {
+            clearForm();
+        }
+    }, [initialData, open, isEditing]);
 
     const clearForm = () => {
         setName('');
@@ -15,14 +28,22 @@ function AddEmployeeModal({ open, onClose, onSave }) {
     };
 
     const handleSubmit = () => {
-        onSave({ name, email, password, role });
+        const employeeData = { 
+            ...initialData, 
+            name, 
+            email, 
+            role,
+            ...(password && { password })
+        };
+        onSave(employeeData, isEditing);
         onClose();
-        clearForm();
     };
 
     return (
         <Dialog open={open} onClose={onClose} PaperProps={{ component: 'form' }} onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-            <DialogTitle sx={{ fontWeight: 'bold' }}>Adaugă Angajat Nou</DialogTitle>
+            <DialogTitle sx={{ fontWeight: 'bold' }}>
+                {isEditing ? 'Modifică Angajat' : 'Adaugă Angajat Nou'}
+            </DialogTitle>
             <DialogContent>
                 <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <TextField
@@ -44,13 +65,14 @@ function AddEmployeeModal({ open, onClose, onSave }) {
                         onChange={(e) => setEmail(e.target.value)}
                     />
                     <TextField
-                        required
-                        label="Parolă Inițială"
+                        required={!isEditing}
+                        label="Parolă"
                         type="password"
                         fullWidth
                         variant="outlined"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        helperText={isEditing ? "Lasă gol pentru a păstra parola actuală" : "Parolă inițială"}
                     />
                     <TextField
                         required

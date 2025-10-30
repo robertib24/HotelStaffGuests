@@ -7,7 +7,6 @@ import GuestList from './GuestList';
 import RoomList from './RoomList';
 import DashboardHome from './pages/DashboardHome';
 import EarningsReport from './pages/EarningsReport';
-import CreateReservationPage from './pages/CreateReservationPage';
 import ReservationList from './pages/ReservationList';
 import './App.css'; 
 
@@ -20,7 +19,6 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<DashboardHome />} />
           <Route path="reservations" element={<ReservationList />} />
-          <Route path="reservations/new" element={<CreateReservationPage />} />
           <Route path="employees" element={<EmployeeList />} />
           <Route path="guests" element={<GuestList />} />
           <Route path="rooms" element={<RoomList />} />

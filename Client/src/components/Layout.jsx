@@ -18,15 +18,12 @@ function Layout() {
     };
 
     const getPageTitle = (path) => {
-        switch (path) {
-            case '/reservations/new': return 'Creare Rezervare Nouă';
-            case '/reservations': return 'Management Rezervări';
-            case '/employees': return 'Management Angajați';
-            case '/guests': return 'Management Oaspeți';
-            case '/rooms': return 'Management Camere';
-            case '/reports': return 'Rapoarte Financiare';
-            default: return 'Dashboard General';
-        }
+        if (path.startsWith('/reservations')) return 'Management Rezervări';
+        if (path.startsWith('/employees')) return 'Management Angajați';
+        if (path.startsWith('/guests')) return 'Management Oaspeți';
+        if (path.startsWith('/rooms')) return 'Management Camere';
+        if (path.startsWith('/reports')) return 'Rapoarte Financiare';
+        return 'Dashboard General';
     };
 
     return (

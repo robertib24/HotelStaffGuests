@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
-import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import { motion } from 'framer-motion';
 import AddEmployeeModal from './components/AddEmployeeModal';
 
@@ -11,9 +13,10 @@ function EmployeeList() {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
+    const [editingEmployee, setEditingEmployee] = useState(null);
     const auth = useAuth();
 
-    const fetchEmployees = async () => {
+    const fetchEmployees = useCallback(async () => {
         setLoading(true);
         try {
             const response = await axios.get('http://localhost:8080/api/employees', {
@@ -25,21 +28,56 @@ function EmployeeList() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [auth.token]);
 
     useEffect(() => {
         if (auth.token) fetchEmployees();
-    }, [auth.token]);
+    }, [auth.token, fetchEmployees]);
     
-    const handleSaveEmployee = async (employeeData) => {
+    const handleSaveEmployee = async (employeeData, isEditing) => {
         try {
-            await axios.post('http://localhost:8080/api/employees', employeeData, {
-                headers: { 'Authorization': `Bearer ${auth.token}` }
-            });
+            if (isEditing) {
+                await axios.put(`http://localhost:8080/api/employees/${employeeData.id}`, employeeData, {
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                });
+            } else {
+                await axios.post('http://localhost:8080/api/employees', employeeData, {
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                });
+            }
             fetchEmployees();
         } catch (error) {
             console.error('Eroare la salvarea angajatului:', error);
         }
+    };
+
+    const handleEditClick = (id) => {
+        const employeeToEdit = employees.find((emp) => emp.id === id);
+        setEditingEmployee(employeeToEdit);
+        setModalOpen(true);
+    };
+
+    const handleDeleteClick = useCallback(async (id) => {
+        if (window.confirm('Sunteți sigur că doriți să ștergeți acest angajat?')) {
+            try {
+                await axios.delete(`http://localhost:8080/api/employees/${id}`, {
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                });
+                fetchEmployees();
+            } catch (error) {
+                console.error('Eroare la ștergerea angajatului:', error);
+            }
+        }
+    }, [auth.token, fetchEmployees]);
+
+    const handleOpenAddModal = () => {
+        setEditingEmployee(null);
+        setModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setEditingEmployee(null);
     };
 
     const getRoleColor = (role) => {
@@ -67,26 +105,29 @@ function EmployeeList() {
             flex: 1.5, 
             minWidth: 180,
             renderCell: (params) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box
-                        sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '50%',
-                            background: `linear-gradient(135deg, ${getRoleColor(params.row.role)} 0%, ${getRoleColor(params.row.role)}dd 100%)`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: '0.875rem',
-                        }}
-                    >
-                        {params.value.charAt(0).toUpperCase()}
+                <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box
+                            sx={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: '50%',
+                                background: `linear-gradient(135deg, ${getRoleColor(params.row.role)} 0%, ${getRoleColor(params.row.role)}dd 100%)`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '0.875rem',
+                                flexShrink: 0
+                            }}
+                        >
+                            {params.value.charAt(0).toUpperCase()}
+                        </Box>
+                        <Typography variant="body2" fontWeight={500}>
+                            {params.value}
+                        </Typography>
                     </Box>
-                    <Typography variant="body2" fontWeight={500}>
-                        {params.value}
-                    </Typography>
                 </Box>
             )
         },
@@ -112,6 +153,29 @@ function EmployeeList() {
                     }}
                 />
             )
+        },
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Acțiuni',
+            width: 100,
+            cellClassName: 'actions',
+            getActions: ({ id }) => {
+                return [
+                    <GridActionsCellItem
+                        icon={<EditIcon />}
+                        label="Modifică"
+                        onClick={() => handleEditClick(id)}
+                        color="inherit"
+                    />,
+                    <GridActionsCellItem
+                        icon={<DeleteIcon />}
+                        label="Șterge"
+                        onClick={() => handleDeleteClick(id)}
+                        color="inherit"
+                    />,
+                ];
+            },
         },
     ];
 
@@ -144,7 +208,7 @@ function EmployeeList() {
                             <Button 
                                 variant="contained" 
                                 startIcon={<AddIcon />}
-                                onClick={() => setModalOpen(true)}
+                                onClick={handleOpenAddModal}
                                 sx={{
                                     background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
                                     boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)',
@@ -189,8 +253,9 @@ function EmployeeList() {
             </motion.div>
             <AddEmployeeModal
                 open={modalOpen}
-                onClose={() => setModalOpen(false)}
+                onClose={handleCloseModal}
                 onSave={handleSaveEmployee}
+                initialData={editingEmployee}
             />
         </>
     );
