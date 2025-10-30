@@ -63,4 +63,38 @@ public class ReservationController {
         Reservation savedReservation = reservationRepository.save(reservation);
         return ResponseEntity.ok(savedReservation);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Reservation> updateReservation(@PathVariable Long id, @RequestBody ReservationRequestDTO request) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + id));
+        Guest guest = guestRepository.findById(request.getGuestId())
+                .orElseThrow(() -> new RuntimeException("Guest not found with id: " + request.getGuestId()));
+        Room room = roomRepository.findById(request.getRoomId())
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + request.getRoomId()));
+
+        if (request.getStartDate().isAfter(request.getEndDate()) || request.getStartDate().isEqual(request.getEndDate())) {
+            throw new RuntimeException("End date must be after start date");
+        }
+
+        long numberOfNights = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate());
+        double totalPrice = numberOfNights * room.getPrice();
+
+        reservation.setGuest(guest);
+        reservation.setRoom(room);
+        reservation.setStartDate(request.getStartDate());
+        reservation.setEndDate(request.getEndDate());
+        reservation.setTotalPrice(totalPrice);
+
+        Reservation updatedReservation = reservationRepository.save(reservation);
+        return ResponseEntity.ok(updatedReservation);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReservation(@PathVariable Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + id));
+        reservationRepository.delete(reservation);
+        return ResponseEntity.noContent().build();
+    }
 }
