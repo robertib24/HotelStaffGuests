@@ -62,7 +62,7 @@ function RoomList() {
         if (window.confirm('Sunteți sigur că doriți să ștergeți această cameră?')) {
             try {
                 await axios.delete(`http://localhost:8080/api/rooms/${id}`, {
-                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                    headers: { 'Authorization': 'Bearer ${auth.token}' }
                 });
                 fetchRooms();
             } catch (error) {
@@ -99,8 +99,17 @@ function RoomList() {
             headerName: 'Număr Cameră', 
             flex: 1, 
             minWidth: 150,
+            headerAlign: 'center',
+            align: 'center',
             renderCell: (params) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ 
+                    width: '100%', 
+                    height: '100%',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: 1 
+                }}>
                     <Box
                         sx={{
                             width: 36,
@@ -114,6 +123,7 @@ function RoomList() {
                             fontWeight: 'bold',
                             fontSize: '0.875rem',
                             boxShadow: `0 4px 12px ${getRoomTypeColor(params.row.type)}40`,
+                            flexShrink: 0,
                         }}
                     >
                         <KingBedIcon sx={{ fontSize: 20 }} />
@@ -129,16 +139,26 @@ function RoomList() {
             headerName: 'Tip Cameră', 
             flex: 1, 
             minWidth: 150,
+            headerAlign: 'center',
+            align: 'center',
             renderCell: (params) => (
-                <Chip 
-                    label={params.value}
-                    sx={{
-                        background: `${getRoomTypeColor(params.value)}20`,
-                        color: getRoomTypeColor(params.value),
-                        fontWeight: 'bold',
-                        border: `1px solid ${getRoomTypeColor(params.value)}40`,
-                    }}
-                />
+                <Box sx={{ 
+                    width: '100%', 
+                    height: '100%',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center' 
+                }}>
+                    <Chip 
+                        label={params.value}
+                        sx={{
+                            background: `${getRoomTypeColor(params.value)}20`,
+                            color: getRoomTypeColor(params.value),
+                            fontWeight: 'bold',
+                            border: `1px solid ${getRoomTypeColor(params.value)}40`,
+                        }}
+                    />
+                </Box>
             )
         },
         { 
@@ -147,8 +167,17 @@ function RoomList() {
             type: 'number', 
             flex: 1, 
             minWidth: 150,
+            headerAlign: 'center',
+            align: 'center',
             renderCell: (params) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ 
+                    width: '100%', 
+                    height: '100%',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: 0.5 
+                }}>
                     <Typography variant="body2" fontWeight={700} color="#f59e0b">
                         {params.value}
                     </Typography>
@@ -163,6 +192,8 @@ function RoomList() {
             type: 'actions',
             headerName: 'Acțiuni',
             width: 100,
+            headerAlign: 'center',
+            align: 'center',
             cellClassName: 'actions',
             getActions: ({ id }) => {
                 return [

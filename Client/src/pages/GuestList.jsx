@@ -94,8 +94,16 @@ function GuestList() {
             headerName: 'Nume Oaspete', 
             flex: 1.5, 
             minWidth: 220,
+            headerAlign: 'left',
+            align: 'left',
             renderCell: (params) => (
-                <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'flex-start' 
+                }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Avatar
                             sx={{
@@ -120,10 +128,20 @@ function GuestList() {
             headerName: 'Email', 
             flex: 2, 
             minWidth: 280,
+            headerAlign: 'left',
+            align: 'left',
             renderCell: (params) => (
-                <Typography variant="body2" color="text.secondary">
-                    {params.value}
-                </Typography>
+                <Box sx={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'flex-start' 
+                }}>
+                    <Typography variant="body2" color="text.secondary">
+                        {params.value}
+                    </Typography>
+                </Box>
             )
         },
         {
@@ -131,6 +149,8 @@ function GuestList() {
             type: 'actions',
             headerName: 'Acțiuni',
             width: 100,
+            headerAlign: 'center',
+            align: 'center',
             cellClassName: 'actions',
             getActions: ({ id }) => {
                 return [

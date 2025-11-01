@@ -82,15 +82,26 @@ function ReservationList() {
     
     const columns = [
         { field: 'id', headerName: 'ID', width: 80, headerAlign: 'center', align: 'center' },
-        { field: 'guestName', headerName: 'Nume Oaspete', flex: 1.5, minWidth: 180 },
+        { 
+            field: 'guestName', 
+            headerName: 'Nume Oaspete', 
+            flex: 1.5, 
+            minWidth: 180, 
+            headerAlign: 'left', 
+            align: 'left' 
+        },
         { field: 'roomNumber', headerName: 'Cameră', width: 100, headerAlign: 'center', align: 'center' },
         { 
             field: 'roomType', 
             headerName: 'Tip Cameră', 
             flex: 1, 
             minWidth: 120,
+            headerAlign: 'left',
+            align: 'left',
             renderCell: (params) => (
-                <Chip label={params.value} size="small" variant="outlined" />
+                <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                    <Chip label={params.value} size="small" variant="outlined" />
+                </Box>
             )
         },
         { 
@@ -99,6 +110,8 @@ function ReservationList() {
             type: 'date',
             flex: 1, 
             minWidth: 120,
+            headerAlign: 'left',
+            align: 'left',
             valueGetter: (value) => value ? new Date(value) : null,
         },
         { 
@@ -107,6 +120,8 @@ function ReservationList() {
             type: 'date',
             flex: 1, 
             minWidth: 120,
+            headerAlign: 'left',
+            align: 'left',
             valueGetter: (value) => value ? new Date(value) : null,
         },
         { 
@@ -115,10 +130,14 @@ function ReservationList() {
             type: 'number', 
             flex: 1, 
             minWidth: 130,
+            headerAlign: 'left',
+            align: 'left',
             renderCell: (params) => (
-                <Typography variant="body2" fontWeight={700} color="#f59e0b">
-                    {params.value.toFixed(2)} RON
-                </Typography>
+                <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                    <Typography variant="body2" fontWeight={700} color="#f59e0b">
+                        {params.value.toFixed(2)} RON
+                    </Typography>
+                </Box>
             )
         },
         {
@@ -126,6 +145,8 @@ function ReservationList() {
             type: 'actions',
             headerName: 'Acțiuni',
             width: 100,
+            headerAlign: 'center',
+            align: 'center',
             cellClassName: 'actions',
             getActions: ({ id }) => {
                 return [
