@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
 import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import { motion } from 'framer-motion';
 import KingBedIcon from '@mui/icons-material/KingBed';
-import AddRoomModal from './components/AddRoomModal';
+import AddRoomModal from '../components/AddRoomModal';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);

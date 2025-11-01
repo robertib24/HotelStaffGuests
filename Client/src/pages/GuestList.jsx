@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Avatar } from '@mui/material';
 import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import { motion } from 'framer-motion';
 import PersonIcon from '@mui/icons-material/Person';
-import AddGuestModal from './components/AddGuestModal';
+import AddGuestModal from '../components/AddGuestModal';
 
 function GuestList() {
     const [guests, setGuests] = useState([]);
