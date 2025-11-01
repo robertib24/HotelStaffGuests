@@ -35,43 +35,79 @@ function LoginPage() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)',
+                    backgroundSize: '200% 200%',
+                    animation: 'gradientFlow 8s ease infinite',
                     color: 'white',
                     p: { xs: 4, md: 8 },
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '@keyframes gradientFlow': {
+                        '0%, 100%': { backgroundPosition: '0% 50%' },
+                        '50%': { backgroundPosition: '100% 50%' }
+                    },
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+                        animation: 'float 6s ease-in-out infinite',
+                    },
+                    '@keyframes float': {
+                        '0%, 100%': { transform: 'translateY(0)' },
+                        '50%': { transform: 'translateY(-20px)' }
+                    }
                 }}
             >
                 <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 150 }}
+                    initial={{ scale: 0, opacity: 0, rotate: -180 }}
+                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 150, damping: 12 }}
                 >
                     <Box
                         sx={{
-                            width: 100,
-                            height: 100,
+                            width: 120,
+                            height: 120,
                             borderRadius: '50%',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            backdropFilter: 'blur(10px)',
+                            background: 'rgba(255, 255, 255, 0.15)',
+                            backdropFilter: 'blur(20px)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             mb: 3,
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)'
+                            boxShadow: '0 12px 48px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.1)',
+                            border: '2px solid rgba(255, 255, 255, 0.2)',
+                            position: 'relative',
+                            zIndex: 1,
                         }}
                     >
-                        <HotelIcon sx={{ fontSize: 60, color: 'white' }} />
+                        <motion.div
+                            animate={{ 
+                                rotate: [0, 10, -10, 0],
+                                scale: [1, 1.05, 1, 1]
+                            }}
+                            transition={{ 
+                                duration: 4, 
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                        >
+                            <HotelIcon sx={{ fontSize: 64, color: 'white', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
+                        </motion.div>
                     </Box>
                 </motion.div>
                 
-                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-                    <Typography component="h1" variant="h3" sx={{ fontWeight: 'bold', mb: 2 }}>
+                <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
+                    <Typography component="h1" variant="h3" sx={{ fontWeight: 'bold', mb: 2, textShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
                         Hotel Admin
                     </Typography>
                 </motion.div>
-                <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300 }}>
+                <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 300, textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
                         Gestionează-ți hotelul. Eficient și modern.
                     </Typography>
                 </motion.div>
@@ -90,25 +126,27 @@ function LoginPage() {
             >
                 <Paper 
                     component={motion.div}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    elevation={16}
+                    initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 100 }}
+                    elevation={24}
                     sx={{
                         width: '100%',
-                        maxWidth: '480px',
+                        maxWidth: '500px',
                         p: { xs: 3, sm: 5 },
-                        borderRadius: 4,
+                        borderRadius: 5,
                         bgcolor: 'background.paper',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                        border: '1.5px solid rgba(255, 255, 255, 0.08)',
+                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                        backdropFilter: 'blur(20px)',
                     }}
                 >
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }} 
                         animate={{ opacity: 1, y: 0 }} 
-                        transition={{ delay: 0.4 }}
+                        transition={{ delay: 0.5 }}
                     >
-                        <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
+                        <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                             Autentificare
                         </Typography>
                     </motion.div>
@@ -116,7 +154,7 @@ function LoginPage() {
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }} 
                         animate={{ opacity: 1, y: 0 }} 
-                        transition={{ delay: 0.5 }}
+                        transition={{ delay: 0.6 }}
                     >
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 4, textAlign: 'center' }}>
                             Bine ai revenit! Introdu detaliile contului tău.
@@ -138,7 +176,7 @@ function LoginPage() {
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }} 
                             animate={{ opacity: 1, y: 0 }} 
-                            transition={{ delay: 0.6 }}
+                            transition={{ delay: 0.7 }}
                         >
                             <TextField
                                 margin="normal"
@@ -162,7 +200,7 @@ function LoginPage() {
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }} 
                             animate={{ opacity: 1, y: 0 }} 
-                            transition={{ delay: 0.7 }}
+                            transition={{ delay: 0.8 }}
                         >
                             <TextField
                                 margin="normal"
@@ -186,7 +224,7 @@ function LoginPage() {
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }} 
                             animate={{ opacity: 1, y: 0 }} 
-                            transition={{ delay: 0.8 }}
+                            transition={{ delay: 0.9 }}
                         >
                             <motion.div
                                 whileHover={{ scale: 1.02 }}

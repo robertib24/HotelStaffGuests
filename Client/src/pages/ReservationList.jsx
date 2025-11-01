@@ -149,38 +149,65 @@ function ReservationList() {
     return (
         <>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.5, type: "spring" }}
             >
                 <Paper 
                     sx={{ 
-                        p: 3, 
+                        p: 4, 
                         height: '80vh', 
                         width: '100%',
-                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
-                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(139, 92, 246, 0.06) 100%)',
+                        border: '1.5px solid rgba(59, 130, 246, 0.25)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '4px',
+                            background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%)',
+                        }
                     }}
                 >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                                🧾 Lista Rezervărilor
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Vezi toate rezervările curente și viitoare
-                            </Typography>
-                        </Box>
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <Box>
+                                <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <span>🧾</span> Lista Rezervărilor
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Vezi toate rezervările curente și viitoare
+                                </Typography>
+                            </Box>
+                        </motion.div>
+                        <motion.div 
+                            whileHover={{ scale: 1.05 }} 
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
                             <Button 
                                 variant="contained" 
                                 startIcon={<AddIcon />}
                                 onClick={handleOpenAddModal}
                                 sx={{
                                     background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                                    boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)',
+                                    boxShadow: '0 6px 24px rgba(59, 130, 246, 0.5)',
+                                    px: 3,
+                                    py: 1.25,
                                     '&:hover': {
                                         background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                                        boxShadow: '0 8px 32px rgba(59, 130, 246, 0.6)',
+                                        transform: 'translateY(-2px)',
                                     }
                                 }}
                             >
@@ -188,7 +215,7 @@ function ReservationList() {
                             </Button>
                         </motion.div>
                     </Box>
-                    <Box sx={{ height: 'calc(100% - 80px)' }}>
+                    <Box sx={{ height: 'calc(100% - 100px)' }}>
                         <DataGrid
                             rows={reservations}
                             columns={columns}
@@ -202,7 +229,26 @@ function ReservationList() {
                                 },
                             }}
                             disableRowSelectionOnClick
-                            sx={{ border: 0 }}
+                            sx={{ 
+                                border: 0,
+                                '& .MuiDataGrid-row': {
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer',
+                                },
+                                '& .MuiDataGrid-row:hover': {
+                                    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                                    transform: 'scale(1.005)',
+                                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)',
+                                },
+                                '& .MuiDataGrid-columnHeader': {
+                                    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                                    fontWeight: 'bold',
+                                    fontSize: '0.95rem',
+                                },
+                                '& .MuiDataGrid-cell': {
+                                    borderBottom: '1px solid rgba(59, 130, 246, 0.08)',
+                                }
+                            }}
                         />
                     </Box>
                 </Paper>
