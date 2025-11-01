@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
@@ -15,6 +15,7 @@ function EmployeeList() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null);
     const auth = useAuth();
+    const isAdmin = auth.user?.role === 'ROLE_Admin';
 
     const fetchEmployees = useCallback(async () => {
         setLoading(true);
@@ -91,94 +92,102 @@ function EmployeeList() {
         return colors[role] || '#6b7280';
     };
 
-    const columns = [
-        { 
-            field: 'id', 
-            headerName: 'ID', 
-            width: 80,
-            headerAlign: 'center',
-            align: 'center',
-        },
-        { 
-            field: 'name', 
-            headerName: 'Nume', 
-            flex: 1.5, 
-            minWidth: 180,
-            renderCell: (params) => (
-                <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Box
-                            sx={{
-                                width: 36,
-                                height: 36,
-                                borderRadius: '50%',
-                                background: `linear-gradient(135deg, ${getRoleColor(params.row.role)} 0%, ${getRoleColor(params.row.role)}dd 100%)`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '0.875rem',
-                                flexShrink: 0,
-                                boxShadow: `0 4px 12px ${getRoleColor(params.row.role)}40`,
-                            }}
-                        >
-                            {params.value.charAt(0).toUpperCase()}
-                        </Box>
-                        <Typography variant="body2" fontWeight={500}>
-                            {params.value}
-                        </Typography>
-                    </Box>
-                </Box>
-            )
-        },
-        { 
-            field: 'email', 
-            headerName: 'Email', 
-            flex: 2, 
-            minWidth: 220 
-        },
-        { 
-            field: 'role', 
-            headerName: 'Rol', 
-            flex: 1, 
-            minWidth: 140,
-            renderCell: (params) => (
-                <Chip 
-                    label={params.value}
-                    sx={{
-                        background: `${getRoleColor(params.value)}20`,
-                        color: getRoleColor(params.value),
-                        fontWeight: 'bold',
-                        border: `1px solid ${getRoleColor(params.value)}40`,
-                    }}
-                />
-            )
-        },
-        {
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Acțiuni',
-            width: 100,
-            cellClassName: 'actions',
-            getActions: ({ id }) => {
-                return [
-                    <GridActionsCellItem
-                        icon={<EditIcon />}
-                        label="Modifică"
-                        onClick={() => handleEditClick(id)}
-                        color="inherit"
-                    />,
-                    <GridActionsCellItem
-                        icon={<DeleteIcon />}
-                        label="Șterge"
-                        onClick={() => handleDeleteClick(id)}
-                        color="inherit"
-                    />,
-                ];
+    const columns = useMemo(() => {
+        const baseColumns = [
+            { 
+                field: 'id', 
+                headerName: 'ID', 
+                width: 80,
+                headerAlign: 'center',
+                align: 'center',
             },
-        },
-    ];
+            { 
+                field: 'name', 
+                headerName: 'Nume', 
+                flex: 1.5, 
+                minWidth: 180,
+                renderCell: (params) => (
+                    <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box
+                                sx={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: '50%',
+                                    background: `linear-gradient(135deg, ${getRoleColor(params.row.role)} 0%, ${getRoleColor(params.row.role)}dd 100%)`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: '0.875rem',
+                                    flexShrink: 0,
+                                    boxShadow: `0 4px 12px ${getRoleColor(params.row.role)}40`,
+                                }}
+                            >
+                                {params.value.charAt(0).toUpperCase()}
+                            </Box>
+                            <Typography variant="body2" fontWeight={500}>
+                                {params.value}
+                            </Typography>
+                        </Box>
+                    </Box>
+                )
+            },
+            { 
+                field: 'email', 
+                headerName: 'Email', 
+                flex: 2, 
+                minWidth: 220 
+            },
+            { 
+                field: 'role', 
+                headerName: 'Rol', 
+                flex: 1, 
+                minWidth: 140,
+                renderCell: (params) => (
+                    <Chip 
+                        label={params.value}
+                        sx={{
+                            background: `${getRoleColor(params.value)}20`,
+                            color: getRoleColor(params.value),
+                            fontWeight: 'bold',
+                            border: `1px solid ${getRoleColor(params.value)}40`,
+                        }}
+                    />
+                )
+            },
+        ];
+
+        if (isAdmin) {
+            baseColumns.push({
+                field: 'actions',
+                type: 'actions',
+                headerName: 'Acțiuni',
+                width: 100,
+                cellClassName: 'actions',
+                getActions: ({ id }) => {
+                    return [
+                        <GridActionsCellItem
+                            icon={<EditIcon />}
+                            label="Modifică"
+                            onClick={() => handleEditClick(id)}
+                            color="inherit"
+                        />,
+                        <GridActionsCellItem
+                            icon={<DeleteIcon />}
+                            label="Șterge"
+                            onClick={() => handleDeleteClick(id)}
+                            color="inherit"
+                        />,
+                    ];
+                },
+            });
+        }
+        
+        return baseColumns;
+
+    }, [isAdmin, handleDeleteClick]);
 
     return (
         <>
@@ -222,32 +231,34 @@ function EmployeeList() {
                                 </Typography>
                             </Box>
                         </motion.div>
-                        <motion.div 
-                            whileHover={{ scale: 1.05 }} 
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, x: 30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <Button 
-                                variant="contained" 
-                                startIcon={<AddIcon />}
-                                onClick={handleOpenAddModal}
-                                sx={{
-                                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                                    boxShadow: '0 6px 24px rgba(59, 130, 246, 0.5)',
-                                    px: 3,
-                                    py: 1.25,
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                                        boxShadow: '0 8px 32px rgba(59, 130, 246, 0.6)',
-                                        transform: 'translateY(-2px)',
-                                    }
-                                }}
+                        {isAdmin && (
+                            <motion.div 
+                                whileHover={{ scale: 1.05 }} 
+                                whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 }}
                             >
-                                Adaugă Angajat
-                            </Button>
-                        </motion.div>
+                                <Button 
+                                    variant="contained" 
+                                    startIcon={<AddIcon />}
+                                    onClick={handleOpenAddModal}
+                                    sx={{
+                                        background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                                        boxShadow: '0 6px 24px rgba(59, 130, 246, 0.5)',
+                                        px: 3,
+                                        py: 1.25,
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                                            boxShadow: '0 8px 32px rgba(59, 130, 246, 0.6)',
+                                            transform: 'translateY(-2px)',
+                                        }
+                                    }}
+                                >
+                                    Adaugă Angajat
+                                </Button>
+                            </motion.div>
+                        )}
                     </Box>
                     <Box sx={{ height: 'calc(100% - 100px)' }}>
                         <DataGrid

@@ -29,7 +29,7 @@ function AddEmployeeModal({ open, onClose, onSave, initialData }) {
 
     const handleSubmit = () => {
         const employeeData = { 
-            ...initialData, 
+            id: initialData?.id,
             name, 
             email, 
             role,

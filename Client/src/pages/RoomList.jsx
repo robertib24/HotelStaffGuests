@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
@@ -16,6 +16,7 @@ function RoomList() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRoom, setEditingRoom] = useState(null);
     const auth = useAuth();
+    const canManage = auth.user?.role === 'ROLE_Admin' || auth.user?.role === 'ROLE_Manager';
 
     const fetchRooms = useCallback(async () => {
         setLoading(true);
@@ -62,7 +63,7 @@ function RoomList() {
         if (window.confirm('Sunteți sigur că doriți să ștergeți această cameră?')) {
             try {
                 await axios.delete(`http://localhost:8080/api/rooms/${id}`, {
-                    headers: { 'Authorization': 'Bearer ${auth.token}' }
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
                 });
                 fetchRooms();
             } catch (error) {
@@ -92,127 +93,134 @@ function RoomList() {
         return colors[type] || '#6b7280';
     };
 
-    const columns = [
-        { field: 'id', headerName: 'ID', width: 80, headerAlign: 'center', align: 'center' },
-        { 
-            field: 'number', 
-            headerName: 'Număr Cameră', 
-            flex: 1, 
-            minWidth: 150,
-            headerAlign: 'center',
-            align: 'center',
-            renderCell: (params) => (
-                <Box sx={{ 
-                    width: '100%', 
-                    height: '100%',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    gap: 1 
-                }}>
-                    <Box
-                        sx={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 1,
-                            background: `linear-gradient(135deg, ${getRoomTypeColor(params.row.type)} 0%, ${getRoomTypeColor(params.row.type)}dd 100%)`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            fontSize: '0.875rem',
-                            boxShadow: `0 4px 12px ${getRoomTypeColor(params.row.type)}40`,
-                            flexShrink: 0,
-                        }}
-                    >
-                        <KingBedIcon sx={{ fontSize: 20 }} />
+    const columns = useMemo(() => {
+        const baseColumns = [
+            { field: 'id', headerName: 'ID', width: 80, headerAlign: 'center', align: 'center' },
+            { 
+                field: 'number', 
+                headerName: 'Număr Cameră', 
+                flex: 1, 
+                minWidth: 150,
+                headerAlign: 'center',
+                align: 'center',
+                renderCell: (params) => (
+                    <Box sx={{ 
+                        width: '100%', 
+                        height: '100%',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        gap: 1 
+                    }}>
+                        <Box
+                            sx={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: 1,
+                                background: `linear-gradient(135deg, ${getRoomTypeColor(params.row.type)} 0%, ${getRoomTypeColor(params.row.type)}dd 100%)`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '0.875rem',
+                                boxShadow: `0 4px 12px ${getRoomTypeColor(params.row.type)}40`,
+                                flexShrink: 0,
+                            }}
+                        >
+                            <KingBedIcon sx={{ fontSize: 20 }} />
+                        </Box>
+                        <Typography variant="body2" fontWeight={600}>
+                            {params.value}
+                        </Typography>
                     </Box>
-                    <Typography variant="body2" fontWeight={600}>
-                        {params.value}
-                    </Typography>
-                </Box>
-            )
-        },
-        { 
-            field: 'type', 
-            headerName: 'Tip Cameră', 
-            flex: 1, 
-            minWidth: 150,
-            headerAlign: 'center',
-            align: 'center',
-            renderCell: (params) => (
-                <Box sx={{ 
-                    width: '100%', 
-                    height: '100%',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center' 
-                }}>
-                    <Chip 
-                        label={params.value}
-                        sx={{
-                            background: `${getRoomTypeColor(params.value)}20`,
-                            color: getRoomTypeColor(params.value),
-                            fontWeight: 'bold',
-                            border: `1px solid ${getRoomTypeColor(params.value)}40`,
-                        }}
-                    />
-                </Box>
-            )
-        },
-        { 
-            field: 'price', 
-            headerName: 'Preț / Noapte', 
-            type: 'number', 
-            flex: 1, 
-            minWidth: 150,
-            headerAlign: 'center',
-            align: 'center',
-            renderCell: (params) => (
-                <Box sx={{ 
-                    width: '100%', 
-                    height: '100%',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    gap: 0.5 
-                }}>
-                    <Typography variant="body2" fontWeight={700} color="#f59e0b">
-                        {params.value}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                        RON
-                    </Typography>
-                </Box>
-            )
-        },
-        {
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Acțiuni',
-            width: 100,
-            headerAlign: 'center',
-            align: 'center',
-            cellClassName: 'actions',
-            getActions: ({ id }) => {
-                return [
-                    <GridActionsCellItem
-                        icon={<EditIcon />}
-                        label="Modifică"
-                        onClick={() => handleEditClick(id)}
-                        color="inherit"
-                    />,
-                    <GridActionsCellItem
-                        icon={<DeleteIcon />}
-                        label="Șterge"
-                        onClick={() => handleDeleteClick(id)}
-                        color="inherit"
-                    />,
-                ];
+                )
             },
-        },
-    ];
+            { 
+                field: 'type', 
+                headerName: 'Tip Cameră', 
+                flex: 1, 
+                minWidth: 150,
+                headerAlign: 'center',
+                align: 'center',
+                renderCell: (params) => (
+                    <Box sx={{ 
+                        width: '100%', 
+                        height: '100%',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center' 
+                    }}>
+                        <Chip 
+                            label={params.value}
+                            sx={{
+                                background: `${getRoomTypeColor(params.value)}20`,
+                                color: getRoomTypeColor(params.value),
+                                fontWeight: 'bold',
+                                border: `1px solid ${getRoomTypeColor(params.value)}40`,
+                            }}
+                        />
+                    </Box>
+                )
+            },
+            { 
+                field: 'price', 
+                headerName: 'Preț / Noapte', 
+                type: 'number', 
+                flex: 1, 
+                minWidth: 150,
+                headerAlign: 'center',
+                align: 'center',
+                renderCell: (params) => (
+                    <Box sx={{ 
+                        width: '100%', 
+                        height: '100%',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center', 
+                        gap: 0.5 
+                    }}>
+                        <Typography variant="body2" fontWeight={700} color="#f59e0b">
+                            {params.value}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            RON
+                        </Typography>
+                    </Box>
+                )
+            },
+        ];
+
+        if (canManage) {
+            baseColumns.push({
+                field: 'actions',
+                type: 'actions',
+                headerName: 'Acțiuni',
+                width: 100,
+                headerAlign: 'center',
+                align: 'center',
+                cellClassName: 'actions',
+                getActions: ({ id }) => {
+                    return [
+                        <GridActionsCellItem
+                            icon={<EditIcon />}
+                            label="Modifică"
+                            onClick={() => handleEditClick(id)}
+                            color="inherit"
+                        />,
+                        <GridActionsCellItem
+                            icon={<DeleteIcon />}
+                            label="Șterge"
+                            onClick={() => handleDeleteClick(id)}
+                            color="inherit"
+                        />,
+                    ];
+                },
+            });
+        }
+
+        return baseColumns;
+    }, [canManage, handleDeleteClick, handleEditClick]);
 
     return (
         <>
@@ -256,32 +264,34 @@ function RoomList() {
                                 </Typography>
                             </Box>
                         </motion.div>
-                        <motion.div 
-                            whileHover={{ scale: 1.05 }} 
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, x: 30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <Button 
-                                variant="contained" 
-                                startIcon={<AddIcon />}
-                                onClick={handleOpenAddModal}
-                                sx={{
-                                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                                    boxShadow: '0 6px 24px rgba(245, 158, 11, 0.5)',
-                                    px: 3,
-                                    py: 1.25,
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
-                                        boxShadow: '0 8px 32px rgba(245, 158, 11, 0.6)',
-                                        transform: 'translateY(-2px)',
-                                    }
-                                }}
+                        {canManage && (
+                            <motion.div 
+                                whileHover={{ scale: 1.05 }} 
+                                whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 }}
                             >
-                                Adaugă Cameră
-                            </Button>
-                        </motion.div>
+                                <Button 
+                                    variant="contained" 
+                                    startIcon={<AddIcon />}
+                                    onClick={handleOpenAddModal}
+                                    sx={{
+                                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                        boxShadow: '0 6px 24px rgba(245, 158, 11, 0.5)',
+                                        px: 3,
+                                        py: 1.25,
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
+                                            boxShadow: '0 8px 32px rgba(245, 158, 11, 0.6)',
+                                            transform: 'translateY(-2px)',
+                                        }
+                                    }}
+                                >
+                                    Adaugă Cameră
+                                </Button>
+                            </motion.div>
+                        )}
                     </Box>
                     <Box sx={{ height: 'calc(100% - 100px)' }}>
                         <DataGrid

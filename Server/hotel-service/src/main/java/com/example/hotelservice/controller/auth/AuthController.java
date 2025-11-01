@@ -8,12 +8,17 @@ import com.example.hotelservice.repository.EmployeeRepository;
 import com.example.hotelservice.service.JwtService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,7 +53,12 @@ public class AuthController {
 
         employeeRepository.save(employee);
 
-        String token = jwtService.generateToken(employee);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities", employee.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+        claims.put("name", employee.getName());
+
+        String token = jwtService.generateToken(claims, employee);
         return new AuthResponseDTO(token);
     }
 
@@ -64,7 +74,12 @@ public class AuthController {
         UserDetails userDetails = employeeRepository.findByEmail(request.getEmail())
                 .orElseThrow();
 
-        String token = jwtService.generateToken(userDetails);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authorities", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+        claims.put("name", ((Employee) userDetails).getName());
+
+        String token = jwtService.generateToken(claims, userDetails);
         return new AuthResponseDTO(token);
     }
 }

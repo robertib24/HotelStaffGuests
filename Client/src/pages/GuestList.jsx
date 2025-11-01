@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Avatar } from '@mui/material';
@@ -16,6 +16,7 @@ function GuestList() {
     const [modalOpen, setModalOpen] = useState(false);
     const [editingGuest, setEditingGuest] = useState(null);
     const auth = useAuth();
+    const canManage = auth.user?.role === 'ROLE_Admin' || auth.user?.role === 'ROLE_Manager' || auth.user?.role === 'ROLE_Receptionist';
 
     const fetchGuests = useCallback(async () => {
         setLoading(true);
@@ -81,95 +82,103 @@ function GuestList() {
         setEditingGuest(null);
     };
 
-    const columns = [
-        { 
-            field: 'id', 
-            headerName: 'ID', 
-            width: 80,
-            headerAlign: 'center',
-            align: 'center',
-        },
-        { 
-            field: 'name', 
-            headerName: 'Nume Oaspete', 
-            flex: 1.5, 
-            minWidth: 220,
-            headerAlign: 'left',
-            align: 'left',
-            renderCell: (params) => (
-                <Box sx={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'flex-start' 
-                }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar
-                            sx={{
-                                width: 36,
-                                height: 36,
-                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                fontSize: '0.875rem',
-                                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
-                            }}
-                        >
-                            <PersonIcon />
-                        </Avatar>
-                        <Typography variant="body2" fontWeight={500}>
+    const columns = useMemo(() => {
+        const baseColumns = [
+            { 
+                field: 'id', 
+                headerName: 'ID', 
+                width: 80,
+                headerAlign: 'center',
+                align: 'center',
+            },
+            { 
+                field: 'name', 
+                headerName: 'Nume Oaspete', 
+                flex: 1.5, 
+                minWidth: 220,
+                headerAlign: 'left',
+                align: 'left',
+                renderCell: (params) => (
+                    <Box sx={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'flex-start' 
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Avatar
+                                sx={{
+                                    width: 36,
+                                    height: 36,
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    fontSize: '0.875rem',
+                                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                                }}
+                            >
+                                <PersonIcon />
+                            </Avatar>
+                            <Typography variant="body2" fontWeight={500}>
+                                {params.value}
+                            </Typography>
+                        </Box>
+                    </Box>
+                )
+            },
+            { 
+                field: 'email', 
+                headerName: 'Email', 
+                flex: 2, 
+                minWidth: 280,
+                headerAlign: 'left',
+                align: 'left',
+                renderCell: (params) => (
+                    <Box sx={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'flex-start' 
+                    }}>
+                        <Typography variant="body2" color="text.secondary">
                             {params.value}
                         </Typography>
                     </Box>
-                </Box>
-            )
-        },
-        { 
-            field: 'email', 
-            headerName: 'Email', 
-            flex: 2, 
-            minWidth: 280,
-            headerAlign: 'left',
-            align: 'left',
-            renderCell: (params) => (
-                <Box sx={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'flex-start' 
-                }}>
-                    <Typography variant="body2" color="text.secondary">
-                        {params.value}
-                    </Typography>
-                </Box>
-            )
-        },
-        {
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Acțiuni',
-            width: 100,
-            headerAlign: 'center',
-            align: 'center',
-            cellClassName: 'actions',
-            getActions: ({ id }) => {
-                return [
-                    <GridActionsCellItem
-                        icon={<EditIcon />}
-                        label="Modifică"
-                        onClick={() => handleEditClick(id)}
-                        color="inherit"
-                    />,
-                    <GridActionsCellItem
-                        icon={<DeleteIcon />}
-                        label="Șterge"
-                        onClick={() => handleDeleteClick(id)}
-                        color="inherit"
-                    />,
-                ];
+                )
             },
-        },
-    ];
+        ];
+
+        if (canManage) {
+            baseColumns.push({
+                field: 'actions',
+                type: 'actions',
+                headerName: 'Acțiuni',
+                width: 100,
+                headerAlign: 'center',
+                align: 'center',
+                cellClassName: 'actions',
+                getActions: ({ id }) => {
+                    return [
+                        <GridActionsCellItem
+                            icon={<EditIcon />}
+                            label="Modifică"
+                            onClick={() => handleEditClick(id)}
+                            color="inherit"
+                        />,
+                        <GridActionsCellItem
+                            icon={<DeleteIcon />}
+                            label="Șterge"
+                            onClick={() => handleDeleteClick(id)}
+                            color="inherit"
+                        />,
+                    ];
+                },
+            });
+        }
+        
+        return baseColumns;
+
+    }, [canManage, handleDeleteClick, handleEditClick]);
 
     return (
         <>
@@ -213,32 +222,34 @@ function GuestList() {
                                 </Typography>
                             </Box>
                         </motion.div>
-                        <motion.div 
-                            whileHover={{ scale: 1.05 }} 
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, x: 30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <Button 
-                                variant="contained" 
-                                startIcon={<AddIcon />}
-                                onClick={handleOpenAddModal}
-                                sx={{
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    boxShadow: '0 6px 24px rgba(16, 185, 129, 0.5)',
-                                    px: 3,
-                                    py: 1.25,
-                                    '&:hover': {
-                                        background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                                        boxShadow: '0 8px 32px rgba(16, 185, 129, 0.6)',
-                                        transform: 'translateY(-2px)',
-                                    }
-                                }}
+                        {canManage && (
+                            <motion.div 
+                                whileHover={{ scale: 1.05 }} 
+                                whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, x: 30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 }}
                             >
-                                Adaugă Oaspete
-                            </Button>
-                        </motion.div>
+                                <Button 
+                                    variant="contained" 
+                                    startIcon={<AddIcon />}
+                                    onClick={handleOpenAddModal}
+                                    sx={{
+                                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                        boxShadow: '0 6px 24px rgba(16, 185, 129, 0.5)',
+                                        px: 3,
+                                        py: 1.25,
+                                        '&:hover': {
+                                            background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                                            boxShadow: '0 8px 32px rgba(16, 185, 129, 0.6)',
+                                            transform: 'translateY(-2px)',
+                                        }
+                                    }}
+                                >
+                                    Adaugă Oaspete
+                                </Button>
+                            </motion.div>
+                        )}
                     </Box>
                     <Box sx={{ height: 'calc(100% - 100px)' }}>
                         <DataGrid

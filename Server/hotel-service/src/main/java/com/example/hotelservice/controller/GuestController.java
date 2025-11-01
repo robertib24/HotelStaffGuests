@@ -5,6 +5,7 @@ import com.example.hotelservice.entity.Guest;
 import com.example.hotelservice.repository.GuestRepository;
 import com.example.hotelservice.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -28,7 +29,7 @@ public class GuestController {
 
     @GetMapping
     public List<Guest> getAllGuests() {
-        return guestRepository.findAll();
+        return guestRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     @GetMapping("/{id}")
