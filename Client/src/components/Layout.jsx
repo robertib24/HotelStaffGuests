@@ -26,6 +26,15 @@ function Layout() {
         return 'Dashboard General';
     };
 
+    const getAvatarInitial = () => {
+        if (!auth.user?.name) return '?';
+        const parts = auth.user.name.split(' ');
+        if (parts.length > 1) {
+            return parts[0].charAt(0).toUpperCase() + parts[parts.length - 1].charAt(0).toUpperCase();
+        }
+        return parts[0].charAt(0).toUpperCase();
+    };
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
@@ -41,8 +50,10 @@ function Layout() {
                         {getPageTitle(location.pathname)}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Typography variant="body1">Admin Manager</Typography>
-                        <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.875rem' }}>A</Avatar>
+                        <Typography variant="body1">{auth.user?.name || 'Utilizator'}</Typography>
+                        <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, fontSize: '0.875rem' }}>
+                            {getAvatarInitial()}
+                        </Avatar>
                         <Button variant="outlined" color="inherit" onClick={handleLogout}>
                             Deconectare
                         </Button>

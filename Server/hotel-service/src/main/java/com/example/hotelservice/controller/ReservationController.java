@@ -8,6 +8,7 @@ import com.example.hotelservice.entity.Room;
 import com.example.hotelservice.repository.GuestRepository;
 import com.example.hotelservice.repository.ReservationRepository;
 import com.example.hotelservice.repository.RoomRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class ReservationController {
 
     @GetMapping
     public List<ReservationDTO> getAllReservations() {
-        return reservationRepository.findAll().stream()
+        return reservationRepository.findAll(Sort.by(Sort.Direction.ASC, "id")).stream()
                 .map(ReservationDTO::new)
                 .collect(Collectors.toList());
     }

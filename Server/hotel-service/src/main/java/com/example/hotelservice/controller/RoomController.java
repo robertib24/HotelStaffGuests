@@ -3,6 +3,7 @@ package com.example.hotelservice.controller;
 import com.example.hotelservice.entity.Room;
 import com.example.hotelservice.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,8 +15,6 @@ public class RoomController {
     @Autowired
     private RoomRepository roomRepository;
 
-    // ----- ENDPOINT-URI CRUD (5) -----
-
     @PostMapping
     public Room createRoom(@RequestBody Room room) {
         return roomRepository.save(room);
@@ -23,7 +22,7 @@ public class RoomController {
 
     @GetMapping
     public List<Room> getAllRooms() {
-        return roomRepository.findAll();
+        return roomRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     @GetMapping("/{id}")

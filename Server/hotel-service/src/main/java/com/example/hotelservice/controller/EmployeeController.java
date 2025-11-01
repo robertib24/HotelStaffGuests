@@ -1,9 +1,11 @@
 package com.example.hotelservice.controller;
 
 import com.example.hotelservice.dto.EmployeeRoleCountDTO;
+import com.example.hotelservice.dto.auth.RegisterRequestDTO;
 import com.example.hotelservice.entity.Employee;
 import com.example.hotelservice.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +30,7 @@ public class EmployeeController {
 
     @GetMapping
     public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
+        return employeeRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
     @GetMapping("/{id}")
@@ -37,7 +39,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
-    public Employee updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
+    public Employee updateEmployee(@PathVariable Long id, @RequestBody RegisterRequestDTO employeeDetails) {
         Employee employee = employeeRepository.findById(id).orElseThrow();
         employee.setName(employeeDetails.getName());
         employee.setRole(employeeDetails.getRole());

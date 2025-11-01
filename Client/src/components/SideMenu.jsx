@@ -9,20 +9,27 @@ import HotelIcon from '@mui/icons-material/NightShelter';
 import AssessmentIcon from '@mui/icons-material/AssessmentOutlined';
 import ListAltIcon from '@mui/icons-material/ListAltOutlined';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const drawerWidth = 260;
 
 const menuItems = [
     { text: 'Dashboard', icon: <HomeIcon />, path: '/' },
-    { text: 'Rezervări', icon: <ListAltIcon />, path: '/reservations' },
-    { text: 'Angajați', icon: <BadgeIcon />, path: '/employees' },
-    { text: 'Oaspeți', icon: <PeopleIcon />, path: '/guests' },
-    { text: 'Camere', icon: <KingBedIcon />, path: '/rooms' },
-    { text: 'Rapoarte', icon: <AssessmentIcon />, path: '/reports' },
+    { text: 'Rezervări', icon: <ListAltIcon />, path: '/reservations', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Receptionist'] },
+    { text: 'Angajați', icon: <BadgeIcon />, path: '/employees', roles: ['ROLE_Admin'] },
+    { text: 'Oaspeți', icon: <PeopleIcon />, path: '/guests', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Receptionist'] },
+    { text: 'Camere', icon: <KingBedIcon />, path: '/rooms', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Receptionist', 'ROLE_Cleaner'] },
+    { text: 'Rapoarte', icon: <AssessmentIcon />, path: '/reports', roles: ['ROLE_Admin'] },
 ];
 
 function SideMenu() {
     const location = useLocation();
+    const { user } = useAuth();
+
+    const visibleItems = menuItems.filter(item => {
+        if (!item.roles) return true; 
+        return item.roles.includes(user?.role);
+    });
 
     return (
         <Drawer
@@ -55,7 +62,7 @@ function SideMenu() {
             </Toolbar>
             <Box sx={{ overflow: 'auto', px: 2 }}>
                 <List>
-                    {menuItems.map((item, index) => (
+                    {visibleItems.map((item, index) => (
                         <motion.div
                             key={item.text}
                             initial={{ opacity: 0, x: -20 }}
