@@ -11,6 +11,7 @@ import com.example.hotelservice.repository.RoomRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,6 +59,7 @@ public class ReservationController {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .totalPrice(totalPrice)
+                .createdAt(LocalDate.now())
                 .build();
 
         Reservation savedReservation = reservationRepository.save(reservation);

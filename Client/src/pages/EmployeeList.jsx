@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
 import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
@@ -7,7 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import { motion } from 'framer-motion';
-import AddEmployeeModal from './components/AddEmployeeModal';
+import AddEmployeeModal from '../components/AddEmployeeModal';
 
 function EmployeeList() {
     const [employees, setEmployees] = useState([]);

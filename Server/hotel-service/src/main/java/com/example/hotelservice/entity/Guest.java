@@ -1,5 +1,6 @@
 package com.example.hotelservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,6 +29,7 @@ public class Guest {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "guest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
 
