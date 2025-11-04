@@ -97,6 +97,11 @@ public class ReservationController {
     public ResponseEntity<Void> deleteReservation(@PathVariable Long id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + id));
+
+        Room room = reservation.getRoom();
+        room.setStatus("Necesită Curățenie");
+        roomRepository.save(room);
+
         reservationRepository.delete(reservation);
         return ResponseEntity.noContent().build();
     }

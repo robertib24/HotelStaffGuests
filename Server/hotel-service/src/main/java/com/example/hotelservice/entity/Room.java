@@ -29,6 +29,9 @@ public class Room {
     @Column(nullable = false)
     private double price;
 
+    @Column(nullable = false, columnDefinition = "VARCHAR(255) default 'Curat'")
+    private String status = "Curat";
+
     @JsonIgnore
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reservation> reservations = new ArrayList<>();
