@@ -8,6 +8,7 @@ import RoomList from './pages/RoomList';
 import DashboardHome from './pages/DashboardHome';
 import EarningsReport from './pages/EarningsReport';
 import ReservationList from './pages/ReservationList';
+import HousekeepingList from './pages/HousekeepingList';
 import './App.css'; 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="guests" element={<GuestList />} />
           <Route path="rooms" element={<RoomList />} />
           <Route path="reports" element={<EarningsReport />} />
+          <Route path="housekeeping" element={<HousekeepingList />} /> 
         </Route>
       </Route>
     </Routes>

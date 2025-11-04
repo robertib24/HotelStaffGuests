@@ -8,6 +8,7 @@ import HomeIcon from '@mui/icons-material/DashboardOutlined';
 import HotelIcon from '@mui/icons-material/NightShelter';
 import AssessmentIcon from '@mui/icons-material/AssessmentOutlined';
 import ListAltIcon from '@mui/icons-material/ListAltOutlined';
+import CleaningServicesIcon from '@mui/icons-material/CleaningServicesOutlined';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,6 +20,7 @@ const menuItems = [
     { text: 'Angajați', icon: <BadgeIcon />, path: '/employees', roles: ['ROLE_Admin'] },
     { text: 'Oaspeți', icon: <PeopleIcon />, path: '/guests', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Receptionist'] },
     { text: 'Camere', icon: <KingBedIcon />, path: '/rooms', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Receptionist', 'ROLE_Cleaner'] },
+    { text: 'Curățenie', icon: <CleaningServicesIcon />, path: '/housekeeping', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Cleaner'] },
     { text: 'Rapoarte', icon: <AssessmentIcon />, path: '/reports', roles: ['ROLE_Admin'] },
 ];
 
@@ -73,7 +75,7 @@ function SideMenu() {
                                 <ListItemButton
                                     component={Link}
                                     to={item.path}
-                                    selected={location.pathname.startsWith(item.path)}
+                                    selected={location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path))}
                                     sx={{
                                         borderRadius: 3,
                                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

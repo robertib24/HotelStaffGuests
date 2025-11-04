@@ -9,6 +9,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (token) {
@@ -21,11 +22,11 @@ export function AuthProvider({ children }) {
                 });
             } catch (error) {
                 console.error("Token invalid:", error);
-                logout();
+                setToken(null);
+                localStorage.removeItem('token');
             }
-        } else {
-            setUser(null);
         }
+        setLoading(false);
     }, [token]);
 
     const login = async (email, password) => {
@@ -50,6 +51,7 @@ export function AuthProvider({ children }) {
     const value = {
         token,
         user,
+        loading,
         login,
         logout
     };

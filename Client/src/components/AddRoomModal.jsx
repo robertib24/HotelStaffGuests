@@ -5,6 +5,7 @@ function AddRoomModal({ open, onClose, onSave, initialData }) {
     const [number, setNumber] = useState('');
     const [type, setType] = useState('Single');
     const [price, setPrice] = useState('');
+    const [status, setStatus] = useState('Curat');
 
     const isEditing = initialData != null;
 
@@ -13,6 +14,7 @@ function AddRoomModal({ open, onClose, onSave, initialData }) {
             setNumber(initialData.number);
             setType(initialData.type);
             setPrice(initialData.price.toString());
+            setStatus(initialData.status || 'Curat');
         } else {
             clearForm();
         }
@@ -22,6 +24,7 @@ function AddRoomModal({ open, onClose, onSave, initialData }) {
         setNumber('');
         setType('Single');
         setPrice('');
+        setStatus('Curat');
     };
 
     const handleSubmit = () => {
@@ -29,7 +32,8 @@ function AddRoomModal({ open, onClose, onSave, initialData }) {
             ...initialData, 
             number, 
             type, 
-            price: parseFloat(price) 
+            price: parseFloat(price),
+            status
         };
         onSave(roomData, isEditing);
         onClose();
@@ -74,6 +78,18 @@ function AddRoomModal({ open, onClose, onSave, initialData }) {
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                     />
+                    <TextField
+                        required
+                        select
+                        label="Status Cameră"
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        fullWidth
+                    >
+                        <MenuItem value="Curat">Curat</MenuItem>
+                        <MenuItem value="Necesită Curățenie">Necesită Curățenie</MenuItem>
+                        <MenuItem value="În Mentenanță">În Mentenanță</MenuItem>
+                    </TextField>
                 </Box>
             </DialogContent>
             <DialogActions sx={{ p: 3 }}>

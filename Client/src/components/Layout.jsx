@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AppBar, Toolbar, Typography, Button, Box, CssBaseline, Avatar } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
 import SideMenu from './SideMenu';
 
 const drawerWidth = 260;
@@ -23,6 +22,7 @@ function Layout() {
         if (path.startsWith('/guests')) return 'Management Oaspeți';
         if (path.startsWith('/rooms')) return 'Management Camere';
         if (path.startsWith('/reports')) return 'Rapoarte Financiare';
+        if (path.startsWith('/housekeeping')) return 'Management Curățenie';
         return 'Dashboard General';
     };
 
@@ -76,17 +76,8 @@ function Layout() {
             >
                 <Toolbar />
                 
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={location.pathname}
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <Outlet />
-                    </motion.div>
-                </AnimatePresence>
+                <Outlet />
+                
             </Box>
         </Box>
     );
