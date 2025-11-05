@@ -2,6 +2,8 @@ package com.example.hotelservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -23,9 +25,12 @@ public class Guest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Numele este obligatoriu")
     @Column(nullable = false)
     private String name;
 
+    @NotBlank(message = "Email-ul este obligatoriu")
+    @Email(message = "Email-ul trebuie să fie valid")
     @Column(nullable = false, unique = true)
     private String email;
 

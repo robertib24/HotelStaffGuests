@@ -2,58 +2,52 @@ package com.example.hotelservice.controller;
 
 import com.example.hotelservice.dto.GuestsPerRoomTypeDTO;
 import com.example.hotelservice.entity.Guest;
-import com.example.hotelservice.repository.GuestRepository;
-import com.example.hotelservice.repository.ReservationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import com.example.hotelservice.service.GuestService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/guests")
 public class GuestController {
 
-    @Autowired
-    private GuestRepository guestRepository;
+    private final GuestService guestService;
 
-    @Autowired
-    private ReservationRepository reservationRepository;
+    public GuestController(GuestService guestService) {
+        this.guestService = guestService;
+    }
 
     @PostMapping
-    public Guest createGuest(@RequestBody Guest guest) {
-        return guestRepository.save(guest);
+    public ResponseEntity<Guest> createGuest(@Valid @RequestBody Guest guest) {
+        return new ResponseEntity<>(guestService.createGuest(guest), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public List<Guest> getAllGuests() {
-        return guestRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+    public ResponseEntity<List<Guest>> getAllGuests() {
+        return ResponseEntity.ok(guestService.getAllGuests());
     }
 
     @GetMapping("/{id}")
-    public Guest getGuestById(@PathVariable Long id) {
-        return guestRepository.findById(id).orElse(null);
+    public ResponseEntity<Guest> getGuestById(@PathVariable Long id) {
+        return ResponseEntity.ok(guestService.getGuestById(id));
     }
 
     @PutMapping("/{id}")
-    public Guest updateGuest(@PathVariable Long id, @RequestBody Guest guestDetails) {
-        Guest guest = guestRepository.findById(id).orElseThrow();
-        guest.setName(guestDetails.getName());
-        guest.setEmail(guestDetails.getEmail());
-        return guestRepository.save(guest);
+    public ResponseEntity<Guest> updateGuest(@PathVariable Long id, @Valid @RequestBody Guest guestDetails) {
+        return ResponseEntity.ok(guestService.updateGuest(id, guestDetails));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteGuest(@PathVariable Long id) {
-        guestRepository.deleteById(id);
+    public ResponseEntity<Void> deleteGuest(@PathVariable Long id) {
+        guestService.deleteGuest(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/reports/by-room-type")
-    public List<GuestsPerRoomTypeDTO> getGuestsPerRoomType() {
-        return reservationRepository.getGuestsPerRoomType().stream()
-                .map(result -> new GuestsPerRoomTypeDTO((String) result[0], (String) result[1], (String) result[2]))
-                .collect(Collectors.toList());
+    public ResponseEntity<List<GuestsPerRoomTypeDTO>> getGuestsPerRoomType() {
+        return ResponseEntity.ok(guestService.getGuestsPerRoomType());
     }
 }
