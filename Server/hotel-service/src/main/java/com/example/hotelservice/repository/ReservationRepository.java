@@ -18,4 +18,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r.room.type, r.guest.name, r.guest.email FROM Reservation r ORDER BY r.room.type")
     List<Object[]> getGuestsPerRoomType();
+
+    @Query("SELECT COUNT(r) FROM Reservation r " +
+            "WHERE r.room.id = :roomId " +
+            "AND r.startDate < :endDate AND r.endDate > :startDate " +
+            "AND (:id IS NULL OR r.id != :id)")
+    long countOverlappingReservations(@Param("roomId") Long roomId,
+                                      @Param("startDate") LocalDate startDate,
+                                      @Param("endDate") LocalDate endDate,
+                                      @Param("id") Long id);
 }

@@ -2,6 +2,9 @@ package com.example.hotelservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -20,12 +23,16 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Numărul camerei este obligatoriu")
     @Column(nullable = false)
     private String number;
 
+    @NotBlank(message = "Tipul camerei este obligatoriu")
     @Column(nullable = false)
     private String type;
 
+    @NotNull(message = "Prețul este obligatoriu")
+    @Min(value = 1, message = "Prețul trebuie să fie pozitiv")
     @Column(nullable = false)
     private double price;
 

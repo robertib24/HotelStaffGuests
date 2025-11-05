@@ -1,9 +1,9 @@
 package com.example.hotelservice.controller;
 
 import com.example.hotelservice.entity.Room;
-import com.example.hotelservice.repository.RoomRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import com.example.hotelservice.service.RoomService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,49 +14,45 @@ import java.util.Map;
 @RequestMapping("/api/rooms")
 public class RoomController {
 
-    @Autowired
-    private RoomRepository roomRepository;
+    private final RoomService roomService;
+
+    public RoomController(RoomService roomService) {
+        this.roomService = roomService;
+    }
 
     @PostMapping
-    public Room createRoom(@RequestBody Room room) {
-        return roomRepository.save(room);
+    public ResponseEntity<Room> createRoom(@Valid @RequestBody Room room) {
+        return new ResponseEntity<>(roomService.createRoom(room), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public List<Room> getAllRooms() {
-        return roomRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+    public ResponseEntity<List<Room>> getAllRooms() {
+        return ResponseEntity.ok(roomService.getAllRooms());
     }
 
     @GetMapping("/{id}")
-    public Room getRoomById(@PathVariable Long id) {
-        return roomRepository.findById(id).orElse(null);
+    public ResponseEntity<Room> getRoomById(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.getRoomById(id));
     }
 
     @GetMapping("/status/{status}")
-    public List<Room> getRoomsByStatus(@PathVariable String status) {
-        return roomRepository.findByStatus(status, Sort.by(Sort.Direction.ASC, "id"));
+    public ResponseEntity<List<Room>> getRoomsByStatus(@PathVariable String status) {
+        return ResponseEntity.ok(roomService.getRoomsByStatus(status));
     }
 
     @PutMapping("/{id}")
-    public Room updateRoom(@PathVariable Long id, @RequestBody Room roomDetails) {
-        Room room = roomRepository.findById(id).orElseThrow();
-        room.setNumber(roomDetails.getNumber());
-        room.setType(roomDetails.getType());
-        room.setPrice(roomDetails.getPrice());
-        room.setStatus(roomDetails.getStatus());
-        return roomRepository.save(room);
+    public ResponseEntity<Room> updateRoom(@PathVariable Long id, @Valid @RequestBody Room roomDetails) {
+        return ResponseEntity.ok(roomService.updateRoom(id, roomDetails));
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<Room> updateRoomStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
-        Room room = roomRepository.findById(id).orElseThrow();
-        room.setStatus(body.get("status"));
-        Room updatedRoom = roomRepository.save(room);
-        return ResponseEntity.ok(updatedRoom);
+        return ResponseEntity.ok(roomService.updateRoomStatus(id, body));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteRoom(@PathVariable Long id) {
-        roomRepository.deleteById(id);
+    public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
+        roomService.deleteRoom(id);
+        return ResponseEntity.noContent().build();
     }
 }

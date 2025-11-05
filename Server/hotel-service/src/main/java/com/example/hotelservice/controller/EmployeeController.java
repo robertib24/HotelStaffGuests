@@ -3,64 +3,53 @@ package com.example.hotelservice.controller;
 import com.example.hotelservice.dto.EmployeeRoleCountDTO;
 import com.example.hotelservice.dto.auth.RegisterRequestDTO;
 import com.example.hotelservice.entity.Employee;
-import com.example.hotelservice.repository.EmployeeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.example.hotelservice.service.EmployeeService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/employees")
 public class EmployeeController {
 
-    @Autowired
-    private EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public EmployeeController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
 
     @PostMapping
-    public Employee createEmployee(@RequestBody Employee employee) {
-        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
-        return employeeRepository.save(employee);
+    public ResponseEntity<Employee> createEmployee(@Valid @RequestBody RegisterRequestDTO request) {
+        Employee employee = employeeService.createEmployee(request);
+        return new ResponseEntity<>(employee, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+    public ResponseEntity<List<Employee>> getAllEmployees() {
+        return ResponseEntity.ok(employeeService.getAllEmployees());
     }
 
     @GetMapping("/{id}")
-    public Employee getEmployeeById(@PathVariable Long id) {
-        return employeeRepository.findById(id).orElse(null);
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+        return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
 
     @PutMapping("/{id}")
-    public Employee updateEmployee(@PathVariable Long id, @RequestBody RegisterRequestDTO employeeDetails) {
-        Employee employee = employeeRepository.findById(id).orElseThrow();
-        employee.setName(employeeDetails.getName());
-        employee.setRole(employeeDetails.getRole());
-        employee.setEmail(employeeDetails.getEmail());
-
-        if (employeeDetails.getPassword() != null && !employeeDetails.getPassword().isEmpty()) {
-            employee.setPassword(passwordEncoder.encode(employeeDetails.getPassword()));
-        }
-
-        return employeeRepository.save(employee);
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @Valid @RequestBody RegisterRequestDTO employeeDetails) {
+        return ResponseEntity.ok(employeeService.updateEmployee(id, employeeDetails));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteEmployee(@PathVariable Long id) {
-        employeeRepository.deleteById(id);
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+        employeeService.deleteEmployee(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/reports/role-count")
-    public List<EmployeeRoleCountDTO> getEmployeesPerRoleCount() {
-        return employeeRepository.getEmployeesPerRoleCount().stream()
-                .map(result -> new EmployeeRoleCountDTO((String) result[0], (Long) result[1]))
-                .collect(Collectors.toList());
+    public ResponseEntity<List<EmployeeRoleCountDTO>> getEmployeesPerRoleCount() {
+        return ResponseEntity.ok(employeeService.getEmployeesPerRoleCount());
     }
 }
