@@ -1,103 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
-import { Typography, Paper, Box, Button, Chip, Grid, CircularProgress, Alert, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { 
+    Paper, 
+    Box, 
+    Chip, 
+    CircularProgress, 
+    Alert, 
+    ToggleButton, 
+    ToggleButtonGroup,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    InputAdornment,
+    Typography,
+    Button
+} from '@mui/material';
 import { motion } from 'framer-motion';
 import KingBedIcon from '@mui/icons-material/KingBed';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
-
-function RoomStatusCard({ room, onUpdateStatus }) {
-    const isDirty = room.status === 'Necesită Curățenie';
-    const auth = useAuth();
-    const canUpdate = auth.user?.role === 'ROLE_Admin' || auth.user?.role === 'ROLE_Manager' || auth.user?.role === 'ROLE_Cleaner';
-
-    const handleUpdate = () => {
-        const newStatus = isDirty ? 'Curat' : 'Necesită Curățenie';
-        onUpdateStatus(room.id, newStatus);
-    };
-
-    const getRoomTypeColor = (type) => {
-        const colors = {
-            'Single': '#3b82f6', 'Double': '#8b5cf6', 'Suite': '#f59e0b',
-            'Deluxe': '#ef4444', 'Presidential': '#ec4899'
-        };
-        return colors[type] || '#6b7280';
-    };
-
-    return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-        >
-            <Paper 
-                sx={{ 
-                    p: 2.5, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    justifyContent: 'space-between', 
-                    height: '100%',
-                    borderLeft: `5px solid ${isDirty ? '#f59e0b' : '#10b981'}`,
-                    background: isDirty ? 'rgba(245, 158, 11, 0.05)' : 'rgba(16, 185, 129, 0.05)',
-                }}
-            >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <KingBedIcon sx={{ fontSize: 28, color: getRoomTypeColor(room.type) }} />
-                        <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Camera {room.number}</Typography>
-                            <Chip 
-                                label={room.type}
-                                size="small"
-                                sx={{
-                                    background: `${getRoomTypeColor(room.type)}20`,
-                                    color: getRoomTypeColor(room.type),
-                                    fontWeight: 'bold',
-                                    border: `1px solid ${getRoomTypeColor(room.type)}40`,
-                                }}
-                            />
-                        </Box>
-                    </Box>
-                    <Chip
-                        icon={isDirty ? <CleaningServicesIcon /> : <CheckCircleIcon />}
-                        label={room.status}
-                        size="small"
-                        color={isDirty ? 'warning' : 'success'}
-                        variant="outlined"
-                        sx={{ fontWeight: 'bold' }}
-                    />
-                </Box>
-                {canUpdate && (
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        onClick={handleUpdate}
-                        color={isDirty ? 'warning' : 'success'}
-                        startIcon={isDirty ? <CheckCircleIcon /> : <CleaningServicesIcon />}
-                        sx={{
-                            background: isDirty ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                            boxShadow: `0 4px 16px ${isDirty ? 'rgba(245, 158, 11, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`,
-                            '&:hover': {
-                                transform: 'translateY(-2px)',
-                            }
-                        }}
-                    >
-                        {isDirty ? 'Marchează "Curat"' : 'Marchează "Necesită Curățenie"'}
-                    </Button>
-                )}
-            </Paper>
-        </motion.div>
-    );
-}
+import SearchIcon from '@mui/icons-material/Search';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 function HousekeepingList() {
     const [rooms, setRooms] = useState([]);
+    const [filteredRooms, setFilteredRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [viewStatus, setViewStatus] = useState('Necesită Curățenie');
+    const [searchQuery, setSearchQuery] = useState('');
     const auth = useAuth();
 
     useEffect(() => {
@@ -114,6 +51,7 @@ function HousekeepingList() {
                     headers: { 'Authorization': `Bearer ${auth.token}` }
                 });
                 setRooms(response.data);
+                setFilteredRooms(response.data);
             } catch (err) {
                 console.error('Eroare la preluarea camerelor:', err);
                 if (err.response?.status === 403) {
@@ -127,15 +65,28 @@ function HousekeepingList() {
         };
 
         fetchRooms(viewStatus);
-
     }, [auth.token, viewStatus]);
+
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setFilteredRooms(rooms);
+        } else {
+            const filtered = rooms.filter(room => 
+                room.number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                room.type.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredRooms(filtered);
+        }
+    }, [searchQuery, rooms]);
 
     const handleUpdateStatus = async (roomId, newStatus) => {
         try {
-            await axios.put(`http://localhost:8080/api/rooms/${roomId}/status`, { status: newStatus }, {
-                headers: { 'Authorization': `Bearer ${auth.token}` }
-            });
+            await axios.put(`http://localhost:8080/api/rooms/${roomId}/status`, 
+                { status: newStatus }, 
+                { headers: { 'Authorization': `Bearer ${auth.token}` } }
+            );
             setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+            setFilteredRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
         } catch (err) {
             console.error('Eroare la actualizarea statusului:', err);
             setError('Eroare la actualizarea statusului.');
@@ -145,8 +96,19 @@ function HousekeepingList() {
     const handleViewChange = (event, newView) => {
         if (newView !== null) {
             setViewStatus(newView);
+            setSearchQuery('');
         }
     };
+
+    const getRoomTypeColor = (type) => {
+        const colors = {
+            'Single': '#3b82f6', 'Double': '#8b5cf6', 'Suite': '#f59e0b',
+            'Deluxe': '#ef4444', 'Presidential': '#ec4899'
+        };
+        return colors[type] || '#6b7280';
+    };
+
+    const canUpdate = auth.user?.role === 'ROLE_Admin' || auth.user?.role === 'ROLE_Manager' || auth.user?.role === 'ROLE_Cleaner';
 
     return (
         <motion.div
@@ -156,7 +118,7 @@ function HousekeepingList() {
         >
             <Paper 
                 sx={{ 
-                    p: 4, 
+                    p: 3, 
                     width: '100%',
                     background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(220, 38, 38, 0.06) 100%)',
                     border: '1.5px solid rgba(239, 68, 68, 0.25)',
@@ -174,31 +136,49 @@ function HousekeepingList() {
                     }
                 }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                    <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <span>🧹</span> Management Curățenie
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Vezi și actualizează statusul camerelor
-                        </Typography>
+                <Box sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+                        <Box>
+                            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <span>🧹</span> Management Curățenie
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Vezi și actualizează statusul camerelor ({filteredRooms.length} camere)
+                            </Typography>
+                        </Box>
+                        <ToggleButtonGroup
+                            color="primary"
+                            value={viewStatus}
+                            exclusive
+                            onChange={handleViewChange}
+                            size="small"
+                        >
+                            <ToggleButton value="Necesită Curățenie" sx={{ px: 2 }}>
+                                <CleaningServicesIcon sx={{ mr: 1, fontSize: 18 }} />
+                                Necesită Curățenie
+                            </ToggleButton>
+                            <ToggleButton value="Curat" sx={{ px: 2 }}>
+                                <CheckCircleIcon sx={{ mr: 1, fontSize: 18 }} />
+                                Curat
+                            </ToggleButton>
+                        </ToggleButtonGroup>
                     </Box>
-                    <ToggleButtonGroup
-                        color="primary"
-                        value={viewStatus}
-                        exclusive
-                        onChange={handleViewChange}
-                        aria-label="Platform"
-                    >
-                        <ToggleButton value="Necesită Curățenie" color="warning">
-                            <CleaningServicesIcon sx={{ mr: 1, fontSize: 20 }} />
-                            Necesită Curățenie
-                        </ToggleButton>
-                        <ToggleButton value="Curat" color="success">
-                            <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
-                            Curat
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+
+                    <TextField
+                        fullWidth
+                        variant="outlined"
+                        placeholder="Caută după număr sau tip cameră..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                        sx={{ mb: 2 }}
+                    />
                 </Box>
 
                 {loading ? (
@@ -207,16 +187,108 @@ function HousekeepingList() {
                     </Box>
                 ) : error ? (
                     <Alert severity="error">{error}</Alert>
-                ) : rooms.length === 0 ? (
-                    <Alert severity="success">Nicio cameră nu are statusul "{viewStatus}".</Alert>
+                ) : filteredRooms.length === 0 ? (
+                    <Alert severity="success">
+                        {searchQuery ? 'Nicio cameră găsită pentru această căutare.' : `Nicio cameră nu are statusul "${viewStatus}".`}
+                    </Alert>
                 ) : (
-                    <Grid container spacing={3}>
-                        {rooms.map(room => (
-                            <Grid item xs={12} sm={6} md={4} key={room.id}>
-                                <RoomStatusCard room={room} onUpdateStatus={handleUpdateStatus} />
-                            </Grid>
-                        ))}
-                    </Grid>
+                    <TableContainer>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Cameră</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Tip</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Status</TableCell>
+                                    <TableCell sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Preț/Noapte</TableCell>
+                                    {canUpdate && <TableCell align="center" sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Acțiuni</TableCell>}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {filteredRooms.map((room) => (
+                                    <TableRow
+                                        key={room.id}
+                                        component={motion.tr}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 20 }}
+                                        transition={{ duration: 0.3 }}
+                                        sx={{
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                                            }
+                                        }}
+                                    >
+                                        <TableCell>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                <Box
+                                                    sx={{
+                                                        width: 40,
+                                                        height: 40,
+                                                        borderRadius: 2,
+                                                        background: `linear-gradient(135deg, ${getRoomTypeColor(room.type)} 0%, ${getRoomTypeColor(room.type)}dd 100%)`,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: 'white',
+                                                        boxShadow: `0 4px 12px ${getRoomTypeColor(room.type)}40`,
+                                                    }}
+                                                >
+                                                    <KingBedIcon sx={{ fontSize: 20 }} />
+                                                </Box>
+                                                <Typography variant="body1" fontWeight="bold">
+                                                    {room.number}
+                                                </Typography>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip 
+                                                label={room.type}
+                                                size="small"
+                                                sx={{
+                                                    background: `${getRoomTypeColor(room.type)}20`,
+                                                    color: getRoomTypeColor(room.type),
+                                                    fontWeight: 'bold',
+                                                    border: `1px solid ${getRoomTypeColor(room.type)}40`,
+                                                }}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                icon={room.status === 'Necesită Curățenie' ? <CleaningServicesIcon /> : <CheckCircleIcon />}
+                                                label={room.status}
+                                                size="small"
+                                                color={room.status === 'Necesită Curățenie' ? 'warning' : 'success'}
+                                                sx={{ fontWeight: 'bold' }}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontWeight="bold" color="#f59e0b">
+                                                {room.price} RON
+                                            </Typography>
+                                        </TableCell>
+                                        {canUpdate && (
+                                            <TableCell align="center">
+                                                <Button
+                                                    variant="contained"
+                                                    size="small"
+                                                    onClick={() => handleUpdateStatus(room.id, room.status === 'Necesită Curățenie' ? 'Curat' : 'Necesită Curățenie')}
+                                                    color={room.status === 'Necesită Curățenie' ? 'success' : 'warning'}
+                                                    startIcon={room.status === 'Necesită Curățenie' ? <CheckIcon /> : <CloseIcon />}
+                                                    sx={{
+                                                        minWidth: '160px',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '0.75rem',
+                                                    }}
+                                                >
+                                                    {room.status === 'Necesită Curățenie' ? 'Marchează Curat' : 'Marchează Murdar'}
+                                                </Button>
+                                            </TableCell>
+                                        )}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 )}
             </Paper>
         </motion.div>
