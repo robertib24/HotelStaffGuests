@@ -349,7 +349,7 @@ function ReservationList() {
                                 rows={reservations}
                                 columns={columns}
                                 loading={loading}
-                                pageSizeOptions={[10, 25, 50]}
+                                pageSizeOptions={[10, 25, 50, 100]}
                                 slots={{ toolbar: CustomToolbar }}
                                 slotProps={{
                                     toolbar: { 
@@ -381,7 +381,11 @@ function ReservationList() {
                             />
                         </Box>
                     ) : (
-                        <ReservationCalendar reservations={reservations} />
+                        <ReservationCalendar 
+                            reservations={reservations} 
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                        />
                     )}
                 </Paper>
             </motion.div>

@@ -309,7 +309,7 @@ function GuestList() {
                             rows={guests}
                             columns={columns}
                             loading={loading}
-                            pageSizeOptions={[10, 25, 50]}
+                            pageSizeOptions={[10, 25, 50, 100]}
                             slots={{ toolbar: CustomToolbar }}
                             slotProps={{
                                 toolbar: { 

@@ -6,25 +6,14 @@ import {
     IconButton, 
     Chip,
     Tooltip,
-    Button,
-    ToggleButtonGroup,
-    ToggleButton,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow
+    Button
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import ViewListIcon from '@mui/icons-material/ViewList';
 import { motion } from 'framer-motion';
 
 function ReservationCalendar({ reservations }) {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [viewMode, setViewMode] = useState('calendar');
 
     const monthNames = [
         'Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
@@ -80,88 +69,6 @@ function ReservationCalendar({ reservations }) {
                currentDate.getFullYear() === today.getFullYear();
     };
 
-    const sortedReservations = useMemo(() => {
-        return [...reservations].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-    }, [reservations]);
-
-    if (viewMode === 'list') {
-        return (
-            <Paper sx={{ p: 4 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        📅 Vedere Listă Rezervări
-                    </Typography>
-                    <ToggleButtonGroup
-                        value={viewMode}
-                        exclusive
-                        onChange={(e, newMode) => newMode && setViewMode(newMode)}
-                        size="small"
-                    >
-                        <ToggleButton value="calendar">
-                            <CalendarMonthIcon sx={{ mr: 1 }} /> Calendar
-                        </ToggleButton>
-                        <ToggleButton value="list">
-                            <ViewListIcon sx={{ mr: 1 }} /> Listă
-                        </ToggleButton>
-                    </ToggleButtonGroup>
-                </Box>
-                <TableContainer sx={{ maxHeight: 600 }}>
-                    <Table stickyHeader>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Oaspete</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Cameră</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Check-in</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Check-out</TableCell>
-                                <TableCell sx={{ fontWeight: 'bold' }}>Total</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {sortedReservations.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} align="center">
-                                        <Typography color="text.secondary" sx={{ p: 3 }}>
-                                            Nicio rezervare de afișat.
-                                        </Typography>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                sortedReservations.map((res) => (
-                                    <motion.tr
-                                        key={res.id}
-                                        component={TableRow}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ duration: 0.3 }}
-                                        sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.05)' } }}
-                                    >
-                                        <TableCell>
-                                            <Typography variant="body2" fontWeight={500}>{res.guestName}</Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip label={`Nr. ${res.roomNumber} (${res.roomType})`} size="small" variant="outlined" />
-                                        </TableCell>
-                                        <TableCell>
-                                            {new Date(res.startDate).toLocaleDateString('ro-RO')}
-                                        </TableCell>
-                                        <TableCell>
-                                            {new Date(res.endDate).toLocaleDateString('ro-RO')}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Typography variant="body2" fontWeight="bold" color="#f59e0b">
-                                                {res.totalPrice?.toFixed(2)} RON
-                                            </Typography>
-                                        </TableCell>
-                                    </motion.tr>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Paper>
-        );
-    }
-
     return (
         <Paper sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -185,19 +92,6 @@ function ReservationCalendar({ reservations }) {
                     >
                         Azi
                     </Button>
-                    <ToggleButtonGroup
-                        value={viewMode}
-                        exclusive
-                        onChange={(e, newMode) => newMode && setViewMode(newMode)}
-                        size="small"
-                    >
-                        <ToggleButton value="calendar">
-                            <CalendarMonthIcon />
-                        </ToggleButton>
-                        <ToggleButton value="list">
-                            <ViewListIcon />
-                        </ToggleButton>
-                    </ToggleButtonGroup>
                 </Box>
             </Box>
 

@@ -376,7 +376,7 @@ function RoomList() {
                             rows={filteredRooms}
                             columns={columns}
                             loading={loading}
-                            pageSizeOptions={[10, 25, 50]}
+                            pageSizeOptions={[10, 25, 50, 100]}
                             slots={{ toolbar: CustomToolbar }}
                             disableRowSelectionOnClick
                             sx={{ 
