@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Paper, Typography, Box, Card, CardContent, CircularProgress, Chip } from '@mui/material';
+import { Grid, Paper, Typography, Box, Card, CardContent, Chip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import KingBedIcon from '@mui/icons-material/KingBed';
 import BadgeIcon from '@mui/icons-material/Badge';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { DashboardCardSkeleton, ChartSkeleton } from '../components/LoadingSkeletons';
 
 function StatWidget({ title, value, icon, color, trend }) {
     return (
@@ -107,6 +109,7 @@ function DashboardHome() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const auth = useAuth();
+    const { showToast } = useToast();
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -117,19 +120,41 @@ function DashboardHome() {
                 setStats(response.data);
             } catch (error) {
                 console.error("Eroare la preluarea statisticilor:", error);
+                showToast('Eroare la preluarea statisticilor', 'error');
             } finally {
                 setLoading(false);
             }
         };
         fetchStats();
-    }, [auth.token]);
+    }, [auth.token, showToast]);
+
+    const renderSkeletons = () => (
+        <Box>
+            <Box sx={{ mb: 4 }}>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    Bine ai revenit! 👋
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    Iată o privire de ansamblu asupra hotelului tău
+                </Typography>
+            </Box>
+            <Grid container spacing={3}>
+                {[...Array(3)].map((_, i) => (
+                    <Grid item xs={12} md={4} key={i}>
+                        <DashboardCardSkeleton />
+                    </Grid>
+                ))}
+                <Grid item xs={12}>
+                    <Paper sx={{ p: 4, height: 500 }}>
+                        <ChartSkeleton />
+                    </Paper>
+                </Grid>
+            </Grid>
+        </Box>
+    );
 
     if (loading || !stats) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-                <CircularProgress size={60} thickness={4} />
-            </Box>
-        );
+        return renderSkeletons();
     }
 
     return (
@@ -215,18 +240,31 @@ function DashboardHome() {
                                 }
                             }}
                         >
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                            <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'flex-start', 
+                                mb: 3, 
+                                flexWrap: 'nowrap', 
+                                gap: 2 
+                            }}>
                                 <Box>
-                                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                        📊 Flux Oaspeți
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                        <Typography variant="h5" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+                                            📊
+                                        </Typography>
+                                        <Typography variant="h5" sx={{ fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                                            Flux Oaspeți
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary" sx={{ pl: '32px' }}>
                                         Activitatea din ultima săptămână
                                     </Typography>
                                 </Box>
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
+                                    sx={{ flexShrink: 0, ml: 2 }}
                                 >
                                     <Chip 
                                         label="Săptămâna Curentă" 

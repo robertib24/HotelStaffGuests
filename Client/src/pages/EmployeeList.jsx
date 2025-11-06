@@ -1,20 +1,28 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { motion } from 'framer-motion';
 import AddEmployeeModal from '../components/AddEmployeeModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { TableSkeleton } from '../components/LoadingSkeletons';
+import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function EmployeeList() {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [rowToDelete, setRowToDelete] = useState(null);
     const auth = useAuth();
+    const { showToast } = useToast();
     const isAdmin = auth.user?.role === 'ROLE_Admin';
 
     const fetchEmployees = useCallback(async () => {
@@ -26,10 +34,11 @@ function EmployeeList() {
             setEmployees(response.data);
         } catch (error) {
             console.error('Eroare la preluarea angajaților:', error);
+            showToast('Eroare la preluarea angajaților', 'error');
         } finally {
             setLoading(false);
         }
-    }, [auth.token]);
+    }, [auth.token, showToast]);
 
     useEffect(() => {
         if (auth.token) fetchEmployees();
@@ -47,8 +56,10 @@ function EmployeeList() {
                 });
             }
             fetchEmployees();
+            showToast(isEditing ? 'Angajat modificat!' : 'Angajat adăugat!', 'success');
         } catch (error) {
             console.error('Eroare la salvarea angajatului:', error);
+            showToast('Eroare la salvarea angajatului', 'error');
         }
     };
 
@@ -58,18 +69,27 @@ function EmployeeList() {
         setModalOpen(true);
     };
 
-    const handleDeleteClick = useCallback(async (id) => {
-        if (window.confirm('Sunteți sigur că doriți să ștergeți acest angajat?')) {
-            try {
-                await axios.delete(`http://localhost:8080/api/employees/${id}`, {
-                    headers: { 'Authorization': `Bearer ${auth.token}` }
-                });
-                fetchEmployees();
-            } catch (error) {
-                console.error('Eroare la ștergerea angajatului:', error);
-            }
+    const handleDeleteClick = useCallback((id) => {
+        setRowToDelete(id);
+        setConfirmOpen(true);
+    }, []);
+
+    const handleConfirmDelete = useCallback(async () => {
+        if (!rowToDelete) return;
+        try {
+            await axios.delete(`http://localhost:8080/api/employees/${rowToDelete}`, {
+                headers: { 'Authorization': `Bearer ${auth.token}` }
+            });
+            fetchEmployees();
+            showToast('Angajat șters cu succes!', 'success');
+        } catch (error) {
+            console.error('Eroare la ștergerea angajatului:', error);
+            showToast('Eroare la ștergerea angajatului', 'error');
+        } finally {
+            setConfirmOpen(false);
+            setRowToDelete(null);
         }
-    }, [auth.token, fetchEmployees]);
+    }, [auth.token, fetchEmployees, rowToDelete, showToast]);
 
     const handleOpenAddModal = () => {
         setEditingEmployee(null);
@@ -187,7 +207,40 @@ function EmployeeList() {
         
         return baseColumns;
 
-    }, [isAdmin, handleDeleteClick]);
+    }, [isAdmin, handleDeleteClick, handleEditClick]);
+
+    function CustomToolbar(props) {
+        const handleExportCSV = () => {
+            const dataToExport = employees.map(({ id, name, email, role }) => ({ id, name, email, role }));
+            exportToCSV(dataToExport, 'angajati.csv');
+        };
+        const handleExportExcel = () => {
+            const dataToExport = employees.map(({ id, name, email, role }) => ({ id, name, email, role }));
+            exportToExcel(dataToExport, 'angajati.xlsx');
+        };
+
+        return (
+            <GridToolbarContainer sx={{ justifyContent: 'space-between', mb: 2 }}>
+                <GridToolbar {...props} />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button onClick={handleExportCSV} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+                        Export CSV
+                    </Button>
+                    <Button onClick={handleExportExcel} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+                        Export Excel
+                    </Button>
+                </Box>
+            </GridToolbarContainer>
+        );
+    }
+
+    if (loading) {
+        return (
+            <Paper sx={{ p: 4, height: '80vh', width: '100%' }}>
+                <TableSkeleton rows={10} />
+            </Paper>
+        );
+    }
 
     return (
         <>
@@ -266,7 +319,7 @@ function EmployeeList() {
                             columns={columns}
                             loading={loading}
                             pageSizeOptions={[10, 25, 50]}
-                            slots={{ toolbar: GridToolbar }}
+                            slots={{ toolbar: CustomToolbar }}
                             slotProps={{
                                 toolbar: { 
                                     showQuickFilter: true, 
@@ -303,6 +356,15 @@ function EmployeeList() {
                 onClose={handleCloseModal}
                 onSave={handleSaveEmployee}
                 initialData={editingEmployee}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Șterge Angajat"
+                message="Ești sigur că dorești să ștergi acest angajat? Această acțiune nu poate fi anulată."
+                confirmText="Șterge"
+                severity="error"
             />
         </>
     );

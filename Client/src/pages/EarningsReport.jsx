@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Paper, Typography, Box, CircularProgress, Chip } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import { ChartSkeleton } from '../components/LoadingSkeletons';
 
 function EarningsReport() {
     const [reportData, setReportData] = useState([]);
     const [loading, setLoading] = useState(true);
     const auth = useAuth();
+    const { showToast } = useToast();
 
     useEffect(() => {
         const fetchReport = async () => {
@@ -20,18 +23,26 @@ function EarningsReport() {
                 setReportData(response.data);
             } catch (error) {
                 console.error("Eroare la preluarea raportului:", error);
+                showToast('Eroare la preluarea raportului', 'error');
             } finally {
                 setLoading(false);
             }
         };
         if (auth.token) fetchReport();
-    }, [auth.token]);
+    }, [auth.token, showToast]);
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-                <CircularProgress size={60} thickness={4} />
-            </Box>
+            <Paper 
+                sx={{ 
+                    p: 4, 
+                    height: 550,
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.08) 100%)',
+                    border: '1.5px solid rgba(16, 185, 129, 0.25)',
+                }}
+            >
+                <ChartSkeleton />
+            </Paper>
         );
     }
 
@@ -62,42 +73,57 @@ function EarningsReport() {
                     }
                 }}
             >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Box sx={{ mb: 3 }}>
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        mb: 1,
+                        flexWrap: 'wrap',
+                        gap: 2
+                    }}>
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                                📈 Raport Încasări Săptămânale
+                            </Typography>
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                            whileHover={{ scale: 1.05 }}
+                            sx={{ flexShrink: 0 }}
+                        >
+                            <Chip 
+                                icon={<AttachMoneyIcon />}
+                                label={`Total: ${totalEarnings.toFixed(2)} RON`} 
+                                sx={{ 
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: '1rem',
+                                    px: 2,
+                                    py: 2.5,
+                                    boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)',
+                                }}
+                            />
+                        </motion.div>
+                    </Box>
                     <motion.div
                         initial={{ opacity: 0, x: -30 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <Box>
-                            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                📈 Raport Încasări Săptămânale
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Activitatea financiară din ultima săptămână
-                            </Typography>
-                        </Box>
-                    </motion.div>
-                    <motion.div
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.3 }}
-                        whileHover={{ scale: 1.05 }}
                     >
-                        <Chip 
-                            icon={<AttachMoneyIcon />}
-                            label={`Total: ${totalEarnings.toFixed(2)} RON`} 
-                            sx={{ 
-                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '1rem',
-                                px: 2,
-                                py: 2.5,
-                                boxShadow: '0 4px 16px rgba(16, 185, 129, 0.4)',
-                            }}
-                        />
+                        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'left' }}>
+                            Activitatea financiară din ultima săptămână
+                        </Typography>
                     </motion.div>
                 </Box>
+                
                 <ResponsiveContainer width="100%" height="85%">
                     <BarChart
                         data={reportData}
