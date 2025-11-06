@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Box, Button, TextField, MenuItem, Grid, Alert, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
@@ -8,8 +9,8 @@ function ReservationModal({ open, onClose, onSave, initialData }) {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const auth = useAuth();
+    const { showToast } = useToast();
 
     const [selectedGuestId, setSelectedGuestId] = useState('');
     const [selectedRoomId, setSelectedRoomId] = useState('');
@@ -33,7 +34,7 @@ function ReservationModal({ open, onClose, onSave, initialData }) {
                 setGuests(guestsRes.data);
                 setRooms(roomsRes.data);
             } catch (err) {
-                setError('Eroare la preluarea datelor.');
+                showToast('Eroare la preluarea datelor.', 'error');
             } finally {
                 setLoading(false);
             }
@@ -41,12 +42,11 @@ function ReservationModal({ open, onClose, onSave, initialData }) {
         if (open && auth.token) {
             fetchData();
         }
-    }, [open, auth.token]);
+    }, [open, auth.token, showToast]);
 
     useEffect(() => {
         if (open) {
             setError('');
-            setSuccess('');
             if (isEditing) {
                 setSelectedGuestId(initialData.guestId || '');
                 setSelectedRoomId(initialData.roomId || '');
@@ -78,7 +78,6 @@ function ReservationModal({ open, onClose, onSave, initialData }) {
 
     const handleSubmit = async () => {
         setError('');
-        setSuccess('');
 
         if (calculatedPrice <= 0) {
             setError('Datele introduse nu sunt valide. Verificați intervalul de date.');
@@ -95,12 +94,14 @@ function ReservationModal({ open, onClose, onSave, initialData }) {
 
         try {
             await onSave(reservationData, isEditing);
-            setSuccess('Rezervarea a fost salvată cu succes!');
+            showToast('Rezervarea a fost salvată cu succes!', 'success');
             setTimeout(() => {
                 onClose();
-            }, 1500);
+            }, 1000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Eroare la salvarea rezervării.');
+            const errorMsg = err.response?.data?.message || 'Eroare la salvarea rezervării.';
+            setError(errorMsg);
+            showToast(errorMsg, 'error');
         }
     };
 
@@ -117,7 +118,6 @@ function ReservationModal({ open, onClose, onSave, initialData }) {
                 ) : (
                     <Box sx={{ pt: 2, minWidth: { md: 600 } }}>
                         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
-                        {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
                         
                         <Grid container spacing={3}>
                             <Grid item xs={12}>
@@ -146,8 +146,8 @@ function ReservationModal({ open, onClose, onSave, initialData }) {
                                     onChange={(e) => setSelectedRoomId(e.target.value)}
                                 >
                                     {rooms.map((room) => (
-                                        <MenuItem key={room.id} value={room.id}>
-                                            Nr. {room.number} - {room.type} ({room.price} RON/noapte)
+                                        <MenuItem key={room.id} value={room.id} disabled={room.status !== 'Curat' && room.status !== 'Necesită Curățenie'}>
+                                            Nr. {room.number} - {room.type} ({room.price} RON/noapte) {room.status !== 'Curat' && room.status !== 'Necesită Curățenie' ? `(${room.status})` : ''}
                                         </MenuItem>
                                     ))}
                                 </TextField>

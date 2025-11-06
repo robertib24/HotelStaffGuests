@@ -8,7 +8,9 @@ import java.time.LocalDate;
 @Data
 public class ReservationDTO {
     private Long id;
+    private Long guestId;
     private String guestName;
+    private Long roomId;
     private String roomNumber;
     private String roomType;
     private LocalDate startDate;
@@ -17,7 +19,9 @@ public class ReservationDTO {
 
     public ReservationDTO(Reservation reservation) {
         this.id = reservation.getId();
+        this.guestId = reservation.getGuest().getId();
         this.guestName = reservation.getGuest().getName();
+        this.roomId = reservation.getRoom().getId();
         this.roomNumber = reservation.getRoom().getNumber();
         this.roomType = reservation.getRoom().getType();
         this.startDate = reservation.getStartDate();

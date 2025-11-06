@@ -1,21 +1,29 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Avatar } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { motion } from 'framer-motion';
 import PersonIcon from '@mui/icons-material/Person';
 import AddGuestModal from '../components/AddGuestModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { TableSkeleton } from '../components/LoadingSkeletons';
+import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function GuestList() {
     const [guests, setGuests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingGuest, setEditingGuest] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [rowToDelete, setRowToDelete] = useState(null);
     const auth = useAuth();
+    const { showToast } = useToast();
     const canManage = auth.user?.role === 'ROLE_Admin' || auth.user?.role === 'ROLE_Manager' || auth.user?.role === 'ROLE_Receptionist';
 
     const fetchGuests = useCallback(async () => {
@@ -27,10 +35,11 @@ function GuestList() {
             setGuests(response.data);
         } catch (error) {
             console.error('Eroare la preluarea oaspeților:', error);
+            showToast('Eroare la preluarea oaspeților', 'error');
         } finally {
             setLoading(false);
         }
-    }, [auth.token]);
+    }, [auth.token, showToast]);
 
     useEffect(() => {
         if (auth.token) fetchGuests();
@@ -48,8 +57,10 @@ function GuestList() {
                 });
             }
             fetchGuests();
+            showToast(isEditing ? 'Oaspete modificat!' : 'Oaspete adăugat!', 'success');
         } catch (error) {
             console.error('Eroare la salvarea oaspetelui:', error);
+            showToast('Eroare la salvarea oaspetelui', 'error');
         }
     };
 
@@ -59,18 +70,27 @@ function GuestList() {
         setModalOpen(true);
     };
 
-    const handleDeleteClick = useCallback(async (id) => {
-        if (window.confirm('Sunteți sigur că doriți să ștergeți acest oaspete?')) {
-            try {
-                await axios.delete(`http://localhost:8080/api/guests/${id}`, {
-                    headers: { 'Authorization': `Bearer ${auth.token}` }
-                });
-                fetchGuests();
-            } catch (error) {
-                console.error('Eroare la ștergerea oaspetelui:', error);
-            }
+    const handleDeleteClick = useCallback((id) => {
+        setRowToDelete(id);
+        setConfirmOpen(true);
+    }, []);
+
+    const handleConfirmDelete = useCallback(async () => {
+        if (!rowToDelete) return;
+        try {
+            await axios.delete(`http://localhost:8080/api/guests/${rowToDelete}`, {
+                headers: { 'Authorization': `Bearer ${auth.token}` }
+            });
+            fetchGuests();
+            showToast('Oaspete șters cu succes!', 'success');
+        } catch (error) {
+            console.error('Eroare la ștergerea oaspetelui:', error);
+            showToast('Eroare la ștergerea oaspetelui', 'error');
+        } finally {
+            setConfirmOpen(false);
+            setRowToDelete(null);
         }
-    }, [auth.token, fetchGuests]);
+    }, [auth.token, fetchGuests, rowToDelete, showToast]);
 
     const handleOpenAddModal = () => {
         setEditingGuest(null);
@@ -180,6 +200,39 @@ function GuestList() {
 
     }, [canManage, handleDeleteClick, handleEditClick]);
 
+    function CustomToolbar(props) {
+        const handleExportCSV = () => {
+            const dataToExport = guests.map(({ id, name, email }) => ({ id, name, email }));
+            exportToCSV(dataToExport, 'oaspeti.csv');
+        };
+        const handleExportExcel = () => {
+            const dataToExport = guests.map(({ id, name, email }) => ({ id, name, email }));
+            exportToExcel(dataToExport, 'oaspeti.xlsx');
+        };
+
+        return (
+            <GridToolbarContainer sx={{ justifyContent: 'space-between', mb: 2 }}>
+                <GridToolbar {...props} />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button onClick={handleExportCSV} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+                        Export CSV
+                    </Button>
+                    <Button onClick={handleExportExcel} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+                        Export Excel
+                    </Button>
+                </Box>
+            </GridToolbarContainer>
+        );
+    }
+
+    if (loading) {
+        return (
+            <Paper sx={{ p: 4, height: '80vh', width: '100%' }}>
+                <TableSkeleton rows={10} />
+            </Paper>
+        );
+    }
+
     return (
         <>
             <motion.div
@@ -257,7 +310,7 @@ function GuestList() {
                             columns={columns}
                             loading={loading}
                             pageSizeOptions={[10, 25, 50]}
-                            slots={{ toolbar: GridToolbar }}
+                            slots={{ toolbar: CustomToolbar }}
                             slotProps={{
                                 toolbar: { 
                                     showQuickFilter: true, 
@@ -294,6 +347,15 @@ function GuestList() {
                 onClose={handleCloseModal}
                 onSave={handleSaveGuest}
                 initialData={editingGuest}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Șterge Oaspete"
+                message="Ești sigur că dorești să ștergi acest oaspete? Această acțiune nu poate fi anulată."
+                confirmText="Șterge"
+                severity="error"
             />
         </>
     );

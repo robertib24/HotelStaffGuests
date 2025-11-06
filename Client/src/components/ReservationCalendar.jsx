@@ -8,7 +8,13 @@ import {
     Tooltip,
     Button,
     ToggleButtonGroup,
-    ToggleButton
+    ToggleButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow
 } from '@mui/material';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -18,7 +24,7 @@ import { motion } from 'framer-motion';
 
 function ReservationCalendar({ reservations }) {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [viewMode, setViewMode] = useState('calendar'); // 'calendar' or 'list'
+    const [viewMode, setViewMode] = useState('calendar');
 
     const monthNames = [
         'Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie',
@@ -35,7 +41,7 @@ function ReservationCalendar({ reservations }) {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const day = new Date(year, month, 1).getDay();
-        return day === 0 ? 6 : day - 1; // Convert Sunday (0) to 6
+        return day === 0 ? 6 : day - 1;
     }, [currentDate]);
 
     const days = ['Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sâm', 'Dum'];
@@ -46,11 +52,16 @@ function ReservationCalendar({ reservations }) {
             currentDate.getMonth(),
             day
         );
+        dateToCheck.setHours(0, 0, 0, 0);
 
         return reservations.filter(reservation => {
             const start = new Date(reservation.startDate);
+            start.setHours(0, 0, 0, 0); 
+            
             const end = new Date(reservation.endDate);
-            return dateToCheck >= start && dateToCheck <= end;
+            end.setHours(0, 0, 0, 0);
+
+            return dateToCheck >= start && dateToCheck < end;
         });
     };
 
@@ -68,6 +79,10 @@ function ReservationCalendar({ reservations }) {
                currentDate.getMonth() === today.getMonth() &&
                currentDate.getFullYear() === today.getFullYear();
     };
+
+    const sortedReservations = useMemo(() => {
+        return [...reservations].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+    }, [reservations]);
 
     if (viewMode === 'list') {
         return (
@@ -90,7 +105,59 @@ function ReservationCalendar({ reservations }) {
                         </ToggleButton>
                     </ToggleButtonGroup>
                 </Box>
-                {/* Add list view implementation here */}
+                <TableContainer sx={{ maxHeight: 600 }}>
+                    <Table stickyHeader>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Oaspete</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Cameră</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Check-in</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Check-out</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Total</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {sortedReservations.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} align="center">
+                                        <Typography color="text.secondary" sx={{ p: 3 }}>
+                                            Nicio rezervare de afișat.
+                                        </Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                sortedReservations.map((res) => (
+                                    <motion.tr
+                                        key={res.id}
+                                        component={TableRow}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                        sx={{ '&:hover': { backgroundColor: 'rgba(255,255,255,0.05)' } }}
+                                    >
+                                        <TableCell>
+                                            <Typography variant="body2" fontWeight={500}>{res.guestName}</Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Chip label={`Nr. ${res.roomNumber} (${res.roomType})`} size="small" variant="outlined" />
+                                        </TableCell>
+                                        <TableCell>
+                                            {new Date(res.startDate).toLocaleDateString('ro-RO')}
+                                        </TableCell>
+                                        <TableCell>
+                                            {new Date(res.endDate).toLocaleDateString('ro-RO')}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Typography variant="body2" fontWeight="bold" color="#f59e0b">
+                                                {res.totalPrice?.toFixed(2)} RON
+                                            </Typography>
+                                        </TableCell>
+                                    </motion.tr>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </Paper>
         );
     }
@@ -233,7 +300,6 @@ function ReservationCalendar({ reservations }) {
                 })}
             </Box>
 
-            {/* Legend */}
             <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ 
@@ -250,7 +316,7 @@ function ReservationCalendar({ reservations }) {
                         width: 16, 
                         height: 16, 
                         borderRadius: 1,
-                        background: 'rgba(16, 185, 129, 0.1)'
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                     }} />
                     <Typography variant="caption">Cu Rezervări</Typography>
                 </Box>

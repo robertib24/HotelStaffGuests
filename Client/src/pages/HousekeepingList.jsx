@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useDebounce } from '../hooks/useDebounce';
 import axios from 'axios';
 import { 
     Paper, 
@@ -27,15 +29,17 @@ import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import SearchIcon from '@mui/icons-material/Search';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { TableSkeleton } from '../components/LoadingSkeletons';
 
 function HousekeepingList() {
     const [rooms, setRooms] = useState([]);
-    const [filteredRooms, setFilteredRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [viewStatus, setViewStatus] = useState('Necesită Curățenie');
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearchQuery = useDebounce(searchQuery, 500);
     const auth = useAuth();
+    const { showToast } = useToast();
 
     useEffect(() => {
         if (!auth.token) {
@@ -51,33 +55,30 @@ function HousekeepingList() {
                     headers: { 'Authorization': `Bearer ${auth.token}` }
                 });
                 setRooms(response.data);
-                setFilteredRooms(response.data);
             } catch (err) {
                 console.error('Eroare la preluarea camerelor:', err);
-                if (err.response?.status === 403) {
-                    setError('Nu aveți permisiunea de a vedea aceste date.');
-                } else {
-                    setError('Nu s-au putut încărca datele camerelor.');
-                }
+                const errorMsg = err.response?.status === 403 
+                    ? 'Nu aveți permisiunea de a vedea aceste date.' 
+                    : 'Nu s-au putut încărca datele camerelor.';
+                setError(errorMsg);
+                showToast(errorMsg, 'error');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchRooms(viewStatus);
-    }, [auth.token, viewStatus]);
+    }, [auth.token, viewStatus, showToast]);
 
-    useEffect(() => {
-        if (searchQuery.trim() === '') {
-            setFilteredRooms(rooms);
-        } else {
-            const filtered = rooms.filter(room => 
-                room.number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                room.type.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            setFilteredRooms(filtered);
+    const filteredRooms = useMemo(() => {
+        if (debouncedSearchQuery.trim() === '') {
+            return rooms;
         }
-    }, [searchQuery, rooms]);
+        return rooms.filter(room => 
+            room.number.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+            room.type.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+        );
+    }, [debouncedSearchQuery, rooms]);
 
     const handleUpdateStatus = async (roomId, newStatus) => {
         try {
@@ -86,10 +87,10 @@ function HousekeepingList() {
                 { headers: { 'Authorization': `Bearer ${auth.token}` } }
             );
             setRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
-            setFilteredRooms(prevRooms => prevRooms.filter(room => room.id !== roomId));
+            showToast(`Statusul camerei a fost actualizat la "${newStatus}"!`, 'success');
         } catch (err) {
             console.error('Eroare la actualizarea statusului:', err);
-            setError('Eroare la actualizarea statusului.');
+            showToast('Eroare la actualizarea statusului.', 'error');
         }
     };
 
@@ -137,32 +138,50 @@ function HousekeepingList() {
                 }}
             >
                 <Box sx={{ mb: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-                        <Box>
-                            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexWrap: 'wrap', gap: 2 }}>
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
+                        >
+                            <Typography variant="h5" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <span>🧹</span> Management Curățenie
                             </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Vezi și actualizează statusul camerelor ({filteredRooms.length} camere)
-                            </Typography>
-                        </Box>
-                        <ToggleButtonGroup
-                            color="primary"
-                            value={viewStatus}
-                            exclusive
-                            onChange={handleViewChange}
-                            size="small"
+                        </motion.div>
+                        
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2 }}
                         >
-                            <ToggleButton value="Necesită Curățenie" sx={{ px: 2 }}>
-                                <CleaningServicesIcon sx={{ mr: 1, fontSize: 18 }} />
-                                Necesită Curățenie
-                            </ToggleButton>
-                            <ToggleButton value="Curat" sx={{ px: 2 }}>
-                                <CheckCircleIcon sx={{ mr: 1, fontSize: 18 }} />
-                                Curat
-                            </ToggleButton>
-                        </ToggleButtonGroup>
+                            <ToggleButtonGroup
+                                color="primary"
+                                value={viewStatus}
+                                exclusive
+                                onChange={handleViewChange}
+                                size="small"
+                            >
+                                <ToggleButton value="Necesită Curățenie" sx={{ px: 2 }}>
+                                    <CleaningServicesIcon sx={{ mr: 1, fontSize: 18 }} />
+                                    Necesită Curățenie
+                                </ToggleButton>
+                                <ToggleButton value="Curat" sx={{ px: 2 }}>
+                                    <CheckCircleIcon sx={{ mr: 1, fontSize: 18 }} />
+                                    Curat
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                        </motion.div>
                     </Box>
+                    
+                    <motion.div
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Vezi și actualizează statusul camerelor ({filteredRooms.length} camere)
+                        </Typography>
+                    </motion.div>
 
                     <TextField
                         fullWidth
@@ -177,14 +196,11 @@ function HousekeepingList() {
                                 </InputAdornment>
                             ),
                         }}
-                        sx={{ mb: 2 }}
                     />
                 </Box>
 
                 {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-                        <CircularProgress />
-                    </Box>
+                    <TableSkeleton rows={8} />
                 ) : error ? (
                     <Alert severity="error">{error}</Alert>
                 ) : filteredRooms.length === 0 ? (

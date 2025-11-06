@@ -1,21 +1,36 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { motion } from 'framer-motion';
 import KingBedIcon from '@mui/icons-material/KingBed';
 import AddRoomModal from '../components/AddRoomModal';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { TableSkeleton } from '../components/LoadingSkeletons';
+import AdvancedFilters from '../components/AdvancedFilters';
+import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingRoom, setEditingRoom] = useState(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [rowToDelete, setRowToDelete] = useState(null);
+    const [filters, setFilters] = useState({ 
+        roomType: 'all', 
+        status: 'all', 
+        minPrice: '', 
+        maxPrice: '' 
+    });
     const auth = useAuth();
+    const { showToast } = useToast();
     const canManage = auth.user?.role === 'ROLE_Admin' || auth.user?.role === 'ROLE_Manager';
 
     const fetchRooms = useCallback(async () => {
@@ -27,14 +42,26 @@ function RoomList() {
             setRooms(response.data);
         } catch (error) {
             console.error('Eroare la preluarea camerelor:', error);
+            showToast('Eroare la preluarea camerelor', 'error');
         } finally {
             setLoading(false);
         }
-    }, [auth.token]);
+    }, [auth.token, showToast]);
 
     useEffect(() => {
         if (auth.token) fetchRooms();
     }, [auth.token, fetchRooms]);
+
+    const filteredRooms = useMemo(() => {
+        return rooms.filter(room => {
+            const { roomType, status, minPrice, maxPrice } = filters;
+            if (roomType !== 'all' && room.type !== roomType) return false;
+            if (status !== 'all' && room.status !== status) return false;
+            if (minPrice && room.price < parseFloat(minPrice)) return false;
+            if (maxPrice && room.price > parseFloat(maxPrice)) return false;
+            return true;
+        });
+    }, [rooms, filters]);
 
     const handleSaveRoom = async (roomData, isEditing) => {
         try {
@@ -48,8 +75,10 @@ function RoomList() {
                 });
             }
             fetchRooms();
+            showToast(isEditing ? 'Cameră modificată!' : 'Cameră adăugată!', 'success');
         } catch (error) {
             console.error('Eroare la salvarea camerei:', error);
+            showToast('Eroare la salvarea camerei', 'error');
         }
     };
 
@@ -59,18 +88,27 @@ function RoomList() {
         setModalOpen(true);
     };
 
-    const handleDeleteClick = useCallback(async (id) => {
-        if (window.confirm('Sunteți sigur că doriți să ștergeți această cameră?')) {
-            try {
-                await axios.delete(`http://localhost:8080/api/rooms/${id}`, {
-                    headers: { 'Authorization': `Bearer ${auth.token}` }
-                });
-                fetchRooms();
-            } catch (error) {
-                console.error('Eroare la ștergerea camerei:', error);
-            }
+    const handleDeleteClick = useCallback((id) => {
+        setRowToDelete(id);
+        setConfirmOpen(true);
+    }, []);
+
+    const handleConfirmDelete = useCallback(async () => {
+        if (!rowToDelete) return;
+        try {
+            await axios.delete(`http://localhost:8080/api/rooms/${rowToDelete}`, {
+                headers: { 'Authorization': `Bearer ${auth.token}` }
+            });
+            fetchRooms();
+            showToast('Cameră ștearsă!', 'success');
+        } catch (error) {
+            console.error('Eroare la ștergerea camerei:', error);
+            showToast('Eroare la ștergerea camerei', 'error');
+        } finally {
+            setConfirmOpen(false);
+            setRowToDelete(null);
         }
-    }, [auth.token, fetchRooms]);
+    }, [auth.token, fetchRooms, rowToDelete, showToast]);
 
     const handleOpenAddModal = () => {
         setEditingRoom(null);
@@ -222,6 +260,39 @@ function RoomList() {
         return baseColumns;
     }, [canManage, handleDeleteClick, handleEditClick]);
 
+    function CustomToolbar() {
+        const handleExportCSV = () => {
+            const dataToExport = filteredRooms.map(({ id, number, type, price, status }) => ({ id, number, type, price, status }));
+            exportToCSV(dataToExport, 'camere.csv');
+        };
+        const handleExportExcel = () => {
+             const dataToExport = filteredRooms.map(({ id, number, type, price, status }) => ({ id, number, type, price, status }));
+            exportToExcel(dataToExport, 'camere.xlsx');
+        };
+
+        return (
+            <GridToolbarContainer sx={{ justifyContent: 'space-between', mb: 2 }}>
+                <GridToolbar />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button onClick={handleExportCSV} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+                        Export CSV
+                    </Button>
+                    <Button onClick={handleExportExcel} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
+                        Export Excel
+                    </Button>
+                </Box>
+            </GridToolbarContainer>
+        );
+    }
+
+    if (loading) {
+        return (
+            <Paper sx={{ p: 4, height: '80vh', width: '100%' }}>
+                <TableSkeleton rows={10} />
+            </Paper>
+        );
+    }
+
     return (
         <>
             <motion.div
@@ -249,7 +320,7 @@ function RoomList() {
                         }
                     }}
                 >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -293,19 +364,20 @@ function RoomList() {
                             </motion.div>
                         )}
                     </Box>
-                    <Box sx={{ height: 'calc(100% - 100px)' }}>
+
+                    <AdvancedFilters 
+                        filters={filters}
+                        onFiltersChange={setFilters}
+                        onClearFilters={() => setFilters({ roomType: 'all', status: 'all', minPrice: '', maxPrice: '' })}
+                    />
+
+                    <Box sx={{ height: 'calc(100% - 160px)' }}>
                         <DataGrid
-                            rows={rooms}
+                            rows={filteredRooms}
                             columns={columns}
                             loading={loading}
                             pageSizeOptions={[10, 25, 50]}
-                            slots={{ toolbar: GridToolbar }}
-                            slotProps={{
-                                toolbar: { 
-                                    showQuickFilter: true, 
-                                    quickFilterProps: { debounceMs: 500 } 
-                                },
-                            }}
+                            slots={{ toolbar: CustomToolbar }}
                             disableRowSelectionOnClick
                             sx={{ 
                                 border: 0,
@@ -337,6 +409,15 @@ function RoomList() {
                 onClose={handleCloseModal} 
                 onSave={handleSaveRoom} 
                 initialData={editingRoom}
+            />
+            <ConfirmDialog
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Șterge Cameră"
+                message="Ești sigur că dorești să ștergi această cameră? Această acțiune nu poate fi anulată."
+                confirmText="Șterge"
+                severity="error"
             />
         </>
     );
