@@ -2,10 +2,10 @@ package com.example.hotelservice.service;
 
 import com.example.hotelservice.dto.auth.AuthRequestDTO;
 import com.example.hotelservice.dto.auth.AuthResponseDTO;
-import com.example.hotelservice.dto.auth.RegisterRequestDTO;
-import com.example.hotelservice.entity.Employee;
+import com.example.hotelservice.dto.auth.GuestRegisterDTO;
+import com.example.hotelservice.entity.Guest;
 import com.example.hotelservice.exception.DuplicateResourceException;
-import com.example.hotelservice.repository.EmployeeRepository;
+import com.example.hotelservice.repository.GuestRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,40 +18,39 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class AuthService {
+public class GuestAuthService {
 
-    private final EmployeeRepository employeeRepository;
+    private final GuestRepository guestRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthService(EmployeeRepository employeeRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtService jwtService,
-                       AuthenticationManager authenticationManager) {
-        this.employeeRepository = employeeRepository;
+    public GuestAuthService(GuestRepository guestRepository,
+                            PasswordEncoder passwordEncoder,
+                            JwtService jwtService,
+                            AuthenticationManager authenticationManager) {
+        this.guestRepository = guestRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
 
-    public AuthResponseDTO registerEmployee(RegisterRequestDTO request) {
-        if (employeeRepository.findByEmail(request.getEmail()).isPresent()) {
+    public AuthResponseDTO registerGuest(GuestRegisterDTO request) {
+        if (guestRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new DuplicateResourceException("Email-ul este deja folosit.");
         }
 
-        Employee employee = new Employee();
-        employee.setName(request.getName());
-        employee.setEmail(request.getEmail());
-        employee.setPassword(passwordEncoder.encode(request.getPassword()));
-        employee.setRole(request.getRole());
+        Guest guest = new Guest();
+        guest.setName(request.getName());
+        guest.setEmail(request.getEmail());
+        guest.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        employeeRepository.save(employee);
+        guestRepository.save(guest);
 
-        return generateAuthResponse(employee);
+        return generateAuthResponse(guest);
     }
 
-    public AuthResponseDTO loginEmployee(AuthRequestDTO request) {
+    public AuthResponseDTO loginGuest(AuthRequestDTO request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -59,7 +58,7 @@ public class AuthService {
                 )
         );
 
-        UserDetails userDetails = employeeRepository.findByEmail(request.getEmail())
+        UserDetails userDetails = guestRepository.findByEmail(request.getEmail())
                 .orElseThrow();
 
         return generateAuthResponse(userDetails);
@@ -70,8 +69,8 @@ public class AuthService {
         claims.put("authorities", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
 
-        if (userDetails instanceof Employee) {
-            claims.put("name", ((Employee) userDetails).getName());
+        if (userDetails instanceof Guest) {
+            claims.put("name", ((Guest) userDetails).getName());
         }
 
         String token = jwtService.generateToken(claims, userDetails);

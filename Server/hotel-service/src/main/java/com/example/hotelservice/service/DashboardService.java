@@ -40,11 +40,21 @@ public class DashboardService {
 
         List<Map<String, Object>> weeklyData = getWeeklyGuestData();
 
+        Map<String, Long> roomStatusCounts = roomRepository.countRoomsByStatus().stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row[0],
+                        row -> (Long) row[1]
+                ));
+
         return DashboardStatsDTO.builder()
                 .employeeCount(employeeCount)
                 .guestCount(guestCount)
                 .roomCount(roomCount)
                 .weeklyGuestData(weeklyData)
+                .availableRooms(roomStatusCounts.getOrDefault("Curat", 0L))
+                .occupiedRooms(roomStatusCounts.getOrDefault("Ocupat", 0L))
+                .needsCleaningRooms(roomStatusCounts.getOrDefault("Necesită Curățenie", 0L))
+                .inMaintenanceRooms(roomStatusCounts.getOrDefault("În Mentenanță", 0L))
                 .build();
     }
 

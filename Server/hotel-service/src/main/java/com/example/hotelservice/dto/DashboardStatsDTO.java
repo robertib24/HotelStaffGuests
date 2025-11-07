@@ -17,4 +17,9 @@ public class DashboardStatsDTO {
     private long guestCount;
     private long roomCount;
     private List<Map<String, Object>> weeklyGuestData;
+
+    private long availableRooms;
+    private long occupiedRooms;
+    private long needsCleaningRooms;
+    private long inMaintenanceRooms;
 }

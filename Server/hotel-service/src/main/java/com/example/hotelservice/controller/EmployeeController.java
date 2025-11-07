@@ -1,6 +1,7 @@
 package com.example.hotelservice.controller;
 
 import com.example.hotelservice.dto.EmployeeRoleCountDTO;
+import com.example.hotelservice.dto.auth.EmployeeUpdateDTO;
 import com.example.hotelservice.dto.auth.RegisterRequestDTO;
 import com.example.hotelservice.entity.Employee;
 import com.example.hotelservice.service.EmployeeService;
@@ -38,7 +39,7 @@ public class EmployeeController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @Valid @RequestBody RegisterRequestDTO employeeDetails) {
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeUpdateDTO employeeDetails) {
         return ResponseEntity.ok(employeeService.updateEmployee(id, employeeDetails));
     }
 

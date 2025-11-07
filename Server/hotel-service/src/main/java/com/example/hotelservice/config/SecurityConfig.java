@@ -36,7 +36,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/staff/auth/**").permitAll()
+                        .requestMatchers("/api/client/auth/**").permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/{id}").permitAll()
+
+                        .requestMatchers("/api/dashboard/**").authenticated()
 
                         .requestMatchers("/api/employees/**").hasAuthority("ROLE_Admin")
                         .requestMatchers("/api/reports/**").hasAuthority("ROLE_Admin")
@@ -49,6 +55,9 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/guests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
                         .requestMatchers("/api/reservations/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
+
+                        .requestMatchers("/api/client/my-reservations").hasAuthority("ROLE_GUEST")
+                        .requestMatchers("/api/client/reservations").hasAuthority("ROLE_GUEST")
 
                         .anyRequest().authenticated()
                 )

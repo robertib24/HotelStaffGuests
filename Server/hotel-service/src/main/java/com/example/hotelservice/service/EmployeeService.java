@@ -1,11 +1,13 @@
 package com.example.hotelservice.service;
 
 import com.example.hotelservice.dto.EmployeeRoleCountDTO;
+import com.example.hotelservice.dto.auth.EmployeeUpdateDTO;
 import com.example.hotelservice.dto.auth.RegisterRequestDTO;
 import com.example.hotelservice.entity.Employee;
 import com.example.hotelservice.exception.DuplicateResourceException;
 import com.example.hotelservice.exception.ResourceNotFoundException;
 import com.example.hotelservice.repository.EmployeeRepository;
+import com.example.hotelservice.repository.GuestRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,15 +19,17 @@ import java.util.stream.Collectors;
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final GuestRepository guestRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public EmployeeService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder) {
+    public EmployeeService(EmployeeRepository employeeRepository, GuestRepository guestRepository, PasswordEncoder passwordEncoder) {
         this.employeeRepository = employeeRepository;
+        this.guestRepository = guestRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     public Employee createEmployee(RegisterRequestDTO request) {
-        if (employeeRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (employeeRepository.findByEmail(request.getEmail()).isPresent() || guestRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new DuplicateResourceException("Email-ul este deja folosit.");
         }
 
@@ -47,7 +51,7 @@ public class EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Angajatul cu id " + id + " nu a fost găsit."));
     }
 
-    public Employee updateEmployee(Long id, RegisterRequestDTO employeeDetails) {
+    public Employee updateEmployee(Long id, EmployeeUpdateDTO employeeDetails) {
         Employee employee = getEmployeeById(id);
 
         employeeRepository.findByEmail(employeeDetails.getEmail())
@@ -55,6 +59,11 @@ public class EmployeeService {
                     if (!existingEmployee.getId().equals(id)) {
                         throw new DuplicateResourceException("Email-ul este deja folosit de alt angajat.");
                     }
+                });
+
+        guestRepository.findByEmail(employeeDetails.getEmail())
+                .ifPresent(existingGuest -> {
+                    throw new DuplicateResourceException("Email-ul este deja folosit de un oaspete.");
                 });
 
         employee.setName(employeeDetails.getName());
