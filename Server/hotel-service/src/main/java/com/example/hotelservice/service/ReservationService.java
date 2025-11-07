@@ -133,7 +133,7 @@ public class ReservationService {
         long numberOfNights = ChronoUnit.DAYS.between(startDate, endDate);
         double totalPrice = numberOfNights * room.getPrice();
 
-        return Reservation.builder()
+        Reservation reservation = Reservation.builder()
                 .guest(guest)
                 .room(room)
                 .startDate(startDate)
@@ -141,5 +141,7 @@ public class ReservationService {
                 .totalPrice(totalPrice)
                 .createdAt(LocalDate.now())
                 .build();
+
+        return reservation;
     }
 }

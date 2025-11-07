@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Chip, Button, ToggleButtonGroup, ToggleButton } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import { motion } from 'framer-motion';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -11,10 +11,10 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ReservationModal from '../components/ReservationModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton, ChartSkeleton } from '../components/LoadingSkeletons';
-import { exportToCSV, exportToExcel } from '../utils/exportData';
 import ReservationCalendar from '../components/ReservationCalendar';
 
 function ReservationList() {
@@ -117,10 +117,96 @@ function ReservationList() {
         setModalOpen(false);
         setEditingReservation(null);
     };
+
+    const exportToCSV = () => {
+        const headers = ['Cod Rezervare', 'Nume Oaspete', 'Cameră', 'Tip Cameră', 'Check-in', 'Check-out', 'Preț Total'];
+        let csvContent = headers.join(',') + '\n';
+        
+        reservations.forEach(r => {
+            const row = [r.reservationCode, r.guestName, r.roomNumber, r.roomType, r.startDate, r.endDate, r.totalPrice];
+            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'rezervari.csv');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const exportToExcel = () => {
+        const headers = ['Cod Rezervare', 'Nume Oaspete', 'Cameră', 'Tip Cameră', 'Check-in', 'Check-out', 'Preț Total'];
+        let tableHTML = '<table><thead><tr>';
+        
+        headers.forEach(header => {
+            tableHTML += `<th>${header}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+        
+        reservations.forEach(r => {
+            tableHTML += '<tr>';
+            tableHTML += `<td>${r.reservationCode}</td>`;
+            tableHTML += `<td>${r.guestName}</td>`;
+            tableHTML += `<td>${r.roomNumber}</td>`;
+            tableHTML += `<td>${r.roomType}</td>`;
+            tableHTML += `<td>${r.startDate}</td>`;
+            tableHTML += `<td>${r.endDate}</td>`;
+            tableHTML += `<td>${r.totalPrice}</td>`;
+            tableHTML += '</tr>';
+        });
+        tableHTML += '</tbody></table>';
+
+        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'rezervari.xlsx');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
     
     const columns = useMemo(() => {
         const baseColumns = [
-            { field: 'id', headerName: 'ID', width: 80, headerAlign: 'center', align: 'center' },
+            { 
+                field: 'reservationCode', 
+                headerName: 'Cod Rezervare', 
+                width: 180,
+                headerAlign: 'center',
+                align: 'center',
+                renderCell: (params) => (
+                    <Box sx={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center' 
+                    }}>
+                        <Chip 
+                            icon={<ConfirmationNumberIcon sx={{ fontSize: '0.875rem' }} />}
+                            label={params.value}
+                            size="small"
+                            sx={{
+                                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontFamily: 'monospace',
+                                fontSize: '0.75rem',
+                                boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+                            }}
+                        />
+                    </Box>
+                )
+            },
             { 
                 field: 'guestName', 
                 headerName: 'Nume Oaspete', 
@@ -212,47 +298,6 @@ function ReservationList() {
         return baseColumns;
     }, [canManage, handleEditClick, handleDeleteClick]);
 
-    function CustomToolbar(props) {
-        const handleExportCSV = () => {
-            const dataToExport = reservations.map(r => ({
-                id: r.id,
-                nume_oaspete: r.guestName,
-                camera: r.roomNumber,
-                tip_camera: r.roomType,
-                check_in: r.startDate,
-                check_out: r.endDate,
-                pret_total: r.totalPrice
-            }));
-            exportToCSV(dataToExport, 'rezervari.csv');
-        };
-        const handleExportExcel = () => {
-            const dataToExport = reservations.map(r => ({
-                id: r.id,
-                nume_oaspete: r.guestName,
-                camera: r.roomNumber,
-                tip_camera: r.roomType,
-                check_in: r.startDate,
-                check_out: r.endDate,
-                pret_total: r.totalPrice
-            }));
-            exportToExcel(dataToExport, 'rezervari.xlsx');
-        };
-
-        return (
-            <GridToolbarContainer sx={{ justifyContent: 'space-between', mb: 2 }}>
-                <GridToolbar {...props} />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button onClick={handleExportCSV} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export CSV
-                    </Button>
-                    <Button onClick={handleExportExcel} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export Excel
-                    </Button>
-                </Box>
-            </GridToolbarContainer>
-        );
-    }
-
     return (
         <>
             <motion.div
@@ -280,7 +325,7 @@ function ReservationList() {
                         }
                     }}
                 >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -340,17 +385,38 @@ function ReservationList() {
                             )}
                         </Box>
                     </Box>
+
+                    {viewMode === 'list' && (
+                        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                            <Button 
+                                onClick={exportToCSV} 
+                                variant="outlined" 
+                                size="small" 
+                                startIcon={<UploadFileIcon />}
+                            >
+                                Export CSV
+                            </Button>
+                            <Button 
+                                onClick={exportToExcel} 
+                                variant="outlined" 
+                                size="small" 
+                                startIcon={<UploadFileIcon />}
+                            >
+                                Export Excel
+                            </Button>
+                        </Box>
+                    )}
                     
                     {loading ? (
                         viewMode === 'list' ? <TableSkeleton rows={10} /> : <ChartSkeleton />
                     ) : viewMode === 'list' ? (
-                        <Box sx={{ height: 'calc(100% - 100px)' }}>
+                        <Box sx={{ height: 'calc(100% - 160px)' }}>
                             <DataGrid
                                 rows={reservations}
                                 columns={columns}
                                 loading={loading}
                                 pageSizeOptions={[10, 25, 50, 100]}
-                                slots={{ toolbar: CustomToolbar }}
+                                slots={{ toolbar: GridToolbar }}
                                 slotProps={{
                                     toolbar: { 
                                         showQuickFilter: true, 
