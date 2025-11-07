@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -14,7 +14,6 @@ import AddRoomModal from '../components/AddRoomModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton } from '../components/LoadingSkeletons';
 import AdvancedFilters from '../components/AdvancedFilters';
-import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);
@@ -129,6 +128,61 @@ function RoomList() {
             'Presidential': '#ec4899'
         };
         return colors[type] || '#6b7280';
+    };
+
+    const exportToCSV = () => {
+        const headers = ['ID', 'Număr', 'Tip', 'Preț', 'Status'];
+        let csvContent = headers.join(',') + '\n';
+        
+        filteredRooms.forEach(room => {
+            const row = [room.id, room.number, room.type, room.price, room.status];
+            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'camere.csv');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const exportToExcel = () => {
+        const headers = ['ID', 'Număr', 'Tip', 'Preț', 'Status'];
+        let tableHTML = '<table><thead><tr>';
+        
+        headers.forEach(header => {
+            tableHTML += `<th>${header}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+        
+        filteredRooms.forEach(room => {
+            tableHTML += '<tr>';
+            tableHTML += `<td>${room.id}</td>`;
+            tableHTML += `<td>${room.number}</td>`;
+            tableHTML += `<td>${room.type}</td>`;
+            tableHTML += `<td>${room.price}</td>`;
+            tableHTML += `<td>${room.status}</td>`;
+            tableHTML += '</tr>';
+        });
+        tableHTML += '</tbody></table>';
+
+        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'camere.xlsx');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const columns = useMemo(() => {
@@ -258,32 +312,7 @@ function RoomList() {
         }
 
         return baseColumns;
-    }, [canManage, handleDeleteClick, handleEditClick]);
-
-    function CustomToolbar() {
-        const handleExportCSV = () => {
-            const dataToExport = filteredRooms.map(({ id, number, type, price, status }) => ({ id, number, type, price, status }));
-            exportToCSV(dataToExport, 'camere.csv');
-        };
-        const handleExportExcel = () => {
-             const dataToExport = filteredRooms.map(({ id, number, type, price, status }) => ({ id, number, type, price, status }));
-            exportToExcel(dataToExport, 'camere.xlsx');
-        };
-
-        return (
-            <GridToolbarContainer sx={{ justifyContent: 'space-between', mb: 2 }}>
-                <GridToolbar />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button onClick={handleExportCSV} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export CSV
-                    </Button>
-                    <Button onClick={handleExportExcel} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export Excel
-                    </Button>
-                </Box>
-            </GridToolbarContainer>
-        );
-    }
+    }, [canManage, handleDeleteClick]);
 
     if (loading) {
         return (
@@ -371,13 +400,38 @@ function RoomList() {
                         onClearFilters={() => setFilters({ roomType: 'all', status: 'all', minPrice: '', maxPrice: '' })}
                     />
 
-                    <Box sx={{ height: 'calc(100% - 160px)' }}>
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                        <Button 
+                            onClick={exportToCSV} 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<UploadFileIcon />}
+                        >
+                            Export CSV
+                        </Button>
+                        <Button 
+                            onClick={exportToExcel} 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<UploadFileIcon />}
+                        >
+                            Export Excel
+                        </Button>
+                    </Box>
+
+                    <Box sx={{ height: 'calc(100% - 220px)' }}>
                         <DataGrid
                             rows={filteredRooms}
                             columns={columns}
                             loading={loading}
                             pageSizeOptions={[10, 25, 50, 100]}
-                            slots={{ toolbar: CustomToolbar }}
+                            slots={{ toolbar: GridToolbar }}
+                            slotProps={{
+                                toolbar: { 
+                                    showQuickFilter: true, 
+                                    quickFilterProps: { debounceMs: 500 } 
+                                },
+                            }}
                             disableRowSelectionOnClick
                             sx={{ 
                                 border: 0,

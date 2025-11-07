@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Data
 @Builder
@@ -19,6 +20,9 @@ public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String reservationCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "guest_id", nullable = false)
@@ -42,5 +46,15 @@ public class Reservation {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDate.now();
+        if (reservationCode == null) {
+            reservationCode = generateReservationCode();
+        }
+    }
+
+    private String generateReservationCode() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String datePart = LocalDate.now().format(formatter);
+        String randomPart = String.format("%04d", (int) (Math.random() * 10000));
+        return "RES-" + datePart + "-" + randomPart;
     }
 }

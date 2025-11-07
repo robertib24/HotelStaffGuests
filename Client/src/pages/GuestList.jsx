@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Avatar } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -13,7 +13,6 @@ import PersonIcon from '@mui/icons-material/Person';
 import AddGuestModal from '../components/AddGuestModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton } from '../components/LoadingSkeletons';
-import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function GuestList() {
     const [guests, setGuests] = useState([]);
@@ -100,6 +99,59 @@ function GuestList() {
     const handleCloseModal = () => {
         setModalOpen(false);
         setEditingGuest(null);
+    };
+
+    const exportToCSV = () => {
+        const headers = ['ID', 'Nume', 'Email'];
+        let csvContent = headers.join(',') + '\n';
+        
+        guests.forEach(guest => {
+            const row = [guest.id, guest.name, guest.email];
+            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'oaspeti.csv');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const exportToExcel = () => {
+        const headers = ['ID', 'Nume', 'Email'];
+        let tableHTML = '<table><thead><tr>';
+        
+        headers.forEach(header => {
+            tableHTML += `<th>${header}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+        
+        guests.forEach(guest => {
+            tableHTML += '<tr>';
+            tableHTML += `<td>${guest.id}</td>`;
+            tableHTML += `<td>${guest.name}</td>`;
+            tableHTML += `<td>${guest.email}</td>`;
+            tableHTML += '</tr>';
+        });
+        tableHTML += '</tbody></table>';
+
+        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'oaspeti.xlsx');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const columns = useMemo(() => {
@@ -198,32 +250,7 @@ function GuestList() {
         
         return baseColumns;
 
-    }, [canManage, handleDeleteClick, handleEditClick]);
-
-    function CustomToolbar(props) {
-        const handleExportCSV = () => {
-            const dataToExport = guests.map(({ id, name, email }) => ({ id, name, email }));
-            exportToCSV(dataToExport, 'oaspeti.csv');
-        };
-        const handleExportExcel = () => {
-            const dataToExport = guests.map(({ id, name, email }) => ({ id, name, email }));
-            exportToExcel(dataToExport, 'oaspeti.xlsx');
-        };
-
-        return (
-            <GridToolbarContainer sx={{ justifyContent: 'space-between', mb: 2 }}>
-                <GridToolbar {...props} />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button onClick={handleExportCSV} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export CSV
-                    </Button>
-                    <Button onClick={handleExportExcel} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export Excel
-                    </Button>
-                </Box>
-            </GridToolbarContainer>
-        );
-    }
+    }, [canManage, handleDeleteClick]);
 
     if (loading) {
         return (
@@ -260,7 +287,7 @@ function GuestList() {
                         }
                     }}
                 >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -304,13 +331,33 @@ function GuestList() {
                             </motion.div>
                         )}
                     </Box>
-                    <Box sx={{ height: 'calc(100% - 100px)' }}>
+
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                        <Button 
+                            onClick={exportToCSV} 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<UploadFileIcon />}
+                        >
+                            Export CSV
+                        </Button>
+                        <Button 
+                            onClick={exportToExcel} 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<UploadFileIcon />}
+                        >
+                            Export Excel
+                        </Button>
+                    </Box>
+
+                    <Box sx={{ height: 'calc(100% - 160px)' }}>
                         <DataGrid
                             rows={guests}
                             columns={columns}
                             loading={loading}
                             pageSizeOptions={[10, 25, 50, 100]}
-                            slots={{ toolbar: CustomToolbar }}
+                            slots={{ toolbar: GridToolbar }}
                             slotProps={{
                                 toolbar: { 
                                     showQuickFilter: true, 

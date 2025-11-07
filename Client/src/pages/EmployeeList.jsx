@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 import { Typography, Paper, Box, Button, Chip } from '@mui/material';
-import { DataGrid, GridToolbar, GridActionsCellItem, GridToolbarContainer } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -12,7 +12,6 @@ import { motion } from 'framer-motion';
 import AddEmployeeModal from '../components/AddEmployeeModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton } from '../components/LoadingSkeletons';
-import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function EmployeeList() {
     const [employees, setEmployees] = useState([]);
@@ -112,6 +111,60 @@ function EmployeeList() {
         return colors[role] || '#6b7280';
     };
 
+    const exportToCSV = () => {
+        const headers = ['ID', 'Nume', 'Email', 'Rol'];
+        let csvContent = headers.join(',') + '\n';
+        
+        employees.forEach(emp => {
+            const row = [emp.id, emp.name, emp.email, emp.role];
+            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'angajati.csv');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const exportToExcel = () => {
+        const headers = ['ID', 'Nume', 'Email', 'Rol'];
+        let tableHTML = '<table><thead><tr>';
+        
+        headers.forEach(header => {
+            tableHTML += `<th>${header}</th>`;
+        });
+        tableHTML += '</tr></thead><tbody>';
+        
+        employees.forEach(emp => {
+            tableHTML += '<tr>';
+            tableHTML += `<td>${emp.id}</td>`;
+            tableHTML += `<td>${emp.name}</td>`;
+            tableHTML += `<td>${emp.email}</td>`;
+            tableHTML += `<td>${emp.role}</td>`;
+            tableHTML += '</tr>';
+        });
+        tableHTML += '</tbody></table>';
+
+        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'angajati.xlsx');
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const columns = useMemo(() => {
         const baseColumns = [
             { 
@@ -207,32 +260,7 @@ function EmployeeList() {
         
         return baseColumns;
 
-    }, [isAdmin, handleDeleteClick, handleEditClick]);
-
-    function CustomToolbar(props) {
-        const handleExportCSV = () => {
-            const dataToExport = employees.map(({ id, name, email, role }) => ({ id, name, email, role }));
-            exportToCSV(dataToExport, 'angajati.csv');
-        };
-        const handleExportExcel = () => {
-            const dataToExport = employees.map(({ id, name, email, role }) => ({ id, name, email, role }));
-            exportToExcel(dataToExport, 'angajati.xlsx');
-        };
-
-        return (
-            <GridToolbarContainer sx={{ justifyContent: 'space-between', mb: 2 }}>
-                <GridToolbar {...props} />
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button onClick={handleExportCSV} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export CSV
-                    </Button>
-                    <Button onClick={handleExportExcel} variant="outlined" size="small" startIcon={<UploadFileIcon />}>
-                        Export Excel
-                    </Button>
-                </Box>
-            </GridToolbarContainer>
-        );
-    }
+    }, [isAdmin, handleDeleteClick]);
 
     if (loading) {
         return (
@@ -269,7 +297,7 @@ function EmployeeList() {
                         }
                     }}
                 >
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -313,13 +341,33 @@ function EmployeeList() {
                             </motion.div>
                         )}
                     </Box>
-                    <Box sx={{ height: 'calc(100% - 100px)' }}>
+
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                        <Button 
+                            onClick={exportToCSV} 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<UploadFileIcon />}
+                        >
+                            Export CSV
+                        </Button>
+                        <Button 
+                            onClick={exportToExcel} 
+                            variant="outlined" 
+                            size="small" 
+                            startIcon={<UploadFileIcon />}
+                        >
+                            Export Excel
+                        </Button>
+                    </Box>
+
+                    <Box sx={{ height: 'calc(100% - 160px)' }}>
                         <DataGrid
                             rows={employees}
                             columns={columns}
                             loading={loading}
                             pageSizeOptions={[10, 25, 50, 100]}
-                            slots={{ toolbar: CustomToolbar }}
+                            slots={{ toolbar: GridToolbar }}
                             slotProps={{
                                 toolbar: { 
                                     showQuickFilter: true, 

@@ -7,8 +7,11 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+
+    Optional<Reservation> findByReservationCode(String reservationCode);
 
     @Query("SELECT r.startDate, COUNT(r) FROM Reservation r WHERE r.startDate >= :startDate GROUP BY r.startDate ORDER BY r.startDate ASC")
     List<Object[]> getCheckInsPerDay(@Param("startDate") LocalDate startDate);
