@@ -128,10 +128,3 @@ export const exportToPDF = (data, title = 'Report', filename = 'export.pdf') => 
     printWindow.document.close();
     printWindow.print();
 };
-
-// Usage in components:
-// import { exportToCSV, exportToExcel, exportToPDF } from '@/utils/exportData';
-// 
-// <Button onClick={() => exportToCSV(employees, 'angajati.csv')}>
-//     Export CSV
-// </Button>

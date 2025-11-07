@@ -2,7 +2,6 @@ package com.example.hotelservice.controller;
 
 import com.example.hotelservice.dto.ReservationDTO;
 import com.example.hotelservice.dto.ReservationRequestDTO;
-import com.example.hotelservice.entity.Reservation;
 import com.example.hotelservice.service.ReservationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -27,14 +26,14 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<Reservation> createReservation(@Valid @RequestBody ReservationRequestDTO request) {
-        Reservation savedReservation = reservationService.createReservation(request);
+    public ResponseEntity<ReservationDTO> createReservation(@Valid @RequestBody ReservationRequestDTO request) {
+        ReservationDTO savedReservation = reservationService.createReservation(request);
         return new ResponseEntity<>(savedReservation, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Reservation> updateReservation(@PathVariable Long id, @Valid @RequestBody ReservationRequestDTO request) {
-        Reservation updatedReservation = reservationService.updateReservation(id, request);
+    public ResponseEntity<ReservationDTO> updateReservation(@PathVariable Long id, @Valid @RequestBody ReservationRequestDTO request) {
+        ReservationDTO updatedReservation = reservationService.updateReservation(id, request);
         return ResponseEntity.ok(updatedReservation);
     }
 
