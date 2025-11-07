@@ -42,7 +42,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation createReservation(ReservationRequestDTO request) {
+    public ReservationDTO createReservation(ReservationRequestDTO request) {
         Guest guest = guestRepository.findById(request.getGuestId())
                 .orElseThrow(() -> new ResourceNotFoundException("Oaspetele cu id " + request.getGuestId() + " nu a fost găsit."));
         Room room = roomRepository.findById(request.getRoomId())
@@ -52,11 +52,12 @@ public class ReservationService {
         checkForOverlappingReservations(request.getRoomId(), request.getStartDate(), request.getEndDate(), null);
 
         Reservation reservation = buildReservation(guest, room, request);
-        return reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.save(reservation);
+        return new ReservationDTO(savedReservation);
     }
 
     @Transactional
-    public Reservation updateReservation(Long id, ReservationRequestDTO request) {
+    public ReservationDTO updateReservation(Long id, ReservationRequestDTO request) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rezervarea cu id " + id + " nu a fost găsită."));
 
@@ -77,7 +78,8 @@ public class ReservationService {
         reservation.setEndDate(request.getEndDate());
         reservation.setTotalPrice(totalPrice);
 
-        return reservationRepository.save(reservation);
+        Reservation savedReservation = reservationRepository.save(reservation);
+        return new ReservationDTO(savedReservation);
     }
 
     @Transactional
