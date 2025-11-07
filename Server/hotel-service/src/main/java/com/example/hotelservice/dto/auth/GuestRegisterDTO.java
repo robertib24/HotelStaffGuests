@@ -1,0 +1,27 @@
+package com.example.hotelservice.dto.auth;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class GuestRegisterDTO {
+
+    @NotBlank(message = "Numele este obligatoriu")
+    private String name;
+
+    @NotBlank(message = "Email-ul este obligatoriu")
+    @Email(message = "Email-ul trebuie să fie valid")
+    private String email;
+
+    @NotBlank(message = "Parola este obligatorie")
+    @Size(min = 6, message = "Parola trebuie să aibă minim 6 caractere")
+    private String password;
+}

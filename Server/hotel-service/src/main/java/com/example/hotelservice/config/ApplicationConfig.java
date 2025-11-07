@@ -1,6 +1,5 @@
 package com.example.hotelservice.config;
 
-import com.example.hotelservice.repository.EmployeeRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -8,23 +7,21 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class ApplicationConfig {
 
-    private final EmployeeRepository employeeRepository;
+    private final CombinedUserDetailsService combinedUserDetailsService;
 
-    public ApplicationConfig(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
+    public ApplicationConfig(CombinedUserDetailsService combinedUserDetailsService) {
+        this.combinedUserDetailsService = combinedUserDetailsService;
     }
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return email -> employeeRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Angajatul nu a fost găsit cu email-ul: " + email));
+        return combinedUserDetailsService;
     }
 
     @Bean

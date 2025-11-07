@@ -1,5 +1,6 @@
 package com.example.hotelservice.service;
 
+import com.example.hotelservice.dto.ClientReservationRequestDTO;
 import com.example.hotelservice.dto.ReservationDTO;
 import com.example.hotelservice.dto.ReservationRequestDTO;
 import com.example.hotelservice.entity.Guest;
@@ -41,6 +42,12 @@ public class ReservationService {
                 .collect(Collectors.toList());
     }
 
+    public List<ReservationDTO> getReservationsByGuestEmail(String email) {
+        return reservationRepository.findByGuestEmail(email).stream()
+                .map(ReservationDTO::new)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public ReservationDTO createReservation(ReservationRequestDTO request) {
         Guest guest = guestRepository.findById(request.getGuestId())
@@ -51,7 +58,22 @@ public class ReservationService {
         validateReservationDates(request.getStartDate(), request.getEndDate());
         checkForOverlappingReservations(request.getRoomId(), request.getStartDate(), request.getEndDate(), null);
 
-        Reservation reservation = buildReservation(guest, room, request);
+        Reservation reservation = buildReservation(guest, room, request.getStartDate(), request.getEndDate());
+        Reservation savedReservation = reservationRepository.save(reservation);
+        return new ReservationDTO(savedReservation);
+    }
+
+    @Transactional
+    public ReservationDTO createReservationForClient(ClientReservationRequestDTO request, String guestEmail) {
+        Guest guest = guestRepository.findByEmail(guestEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Oaspetele cu email " + guestEmail + " nu a fost găsit."));
+        Room room = roomRepository.findById(request.getRoomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Camera cu id " + request.getRoomId() + " nu a fost găsită."));
+
+        validateReservationDates(request.getStartDate(), request.getEndDate());
+        checkForOverlappingReservations(request.getRoomId(), request.getStartDate(), request.getEndDate(), null);
+
+        Reservation reservation = buildReservation(guest, room, request.getStartDate(), request.getEndDate());
         Reservation savedReservation = reservationRepository.save(reservation);
         return new ReservationDTO(savedReservation);
     }
@@ -107,15 +129,15 @@ public class ReservationService {
         }
     }
 
-    private Reservation buildReservation(Guest guest, Room room, ReservationRequestDTO request) {
-        long numberOfNights = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate());
+    private Reservation buildReservation(Guest guest, Room room, LocalDate startDate, LocalDate endDate) {
+        long numberOfNights = ChronoUnit.DAYS.between(startDate, endDate);
         double totalPrice = numberOfNights * room.getPrice();
 
         return Reservation.builder()
                 .guest(guest)
                 .room(room)
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
+                .startDate(startDate)
+                .endDate(endDate)
                 .totalPrice(totalPrice)
                 .createdAt(LocalDate.now())
                 .build();

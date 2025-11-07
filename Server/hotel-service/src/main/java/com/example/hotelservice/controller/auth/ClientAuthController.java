@@ -2,8 +2,8 @@ package com.example.hotelservice.controller.auth;
 
 import com.example.hotelservice.dto.auth.AuthRequestDTO;
 import com.example.hotelservice.dto.auth.AuthResponseDTO;
-import com.example.hotelservice.dto.auth.RegisterRequestDTO;
-import com.example.hotelservice.service.AuthService;
+import com.example.hotelservice.dto.auth.GuestRegisterDTO;
+import com.example.hotelservice.service.GuestAuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,22 +12,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/staff/auth")
-public class AuthController {
+@RequestMapping("/api/client/auth")
+public class ClientAuthController {
 
-    private final AuthService authService;
+    private final GuestAuthService guestAuthService;
 
-    public AuthController(AuthService authService) {
-        this.authService = authService;
+    public ClientAuthController(GuestAuthService guestAuthService) {
+        this.guestAuthService = guestAuthService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
-        return ResponseEntity.ok(authService.registerEmployee(request));
+    public ResponseEntity<AuthResponseDTO> register(@Valid @RequestBody GuestRegisterDTO request) {
+        return ResponseEntity.ok(guestAuthService.registerGuest(request));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody AuthRequestDTO request) {
-        return ResponseEntity.ok(authService.loginEmployee(request));
+        return ResponseEntity.ok(guestAuthService.loginGuest(request));
     }
 }
