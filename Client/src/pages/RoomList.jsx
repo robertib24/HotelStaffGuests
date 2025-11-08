@@ -2,18 +2,20 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
-import { Typography, Paper, Box, Button, Chip } from '@mui/material';
+import { Typography, Paper, Box, Button, Chip, Rating } from '@mui/material';
 import { DataGrid, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import ReviewsIcon from '@mui/icons-material/Reviews';
 import { motion } from 'framer-motion';
 import KingBedIcon from '@mui/icons-material/KingBed';
 import AddRoomModal from '../components/AddRoomModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton } from '../components/LoadingSkeletons';
 import AdvancedFilters from '../components/AdvancedFilters';
+import RoomReviews from '../components/RoomReviews';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);
@@ -22,6 +24,8 @@ function RoomList() {
     const [editingRoom, setEditingRoom] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [rowToDelete, setRowToDelete] = useState(null);
+    const [reviewsOpen, setReviewsOpen] = useState(false);
+    const [selectedRoomId, setSelectedRoomId] = useState(null);
     const [filters, setFilters] = useState({ 
         roomType: 'all', 
         status: 'all', 
@@ -117,6 +121,11 @@ function RoomList() {
     const handleCloseModal = () => {
         setModalOpen(false);
         setEditingRoom(null);
+    };
+
+    const handleViewReviews = (id) => {
+        setSelectedRoomId(id);
+        setReviewsOpen(true);
     };
 
     const getRoomTypeColor = (type) => {
@@ -283,6 +292,23 @@ function RoomList() {
             },
         ];
 
+        baseColumns.push({
+            field: 'reviews',
+            headerName: 'Recenzii',
+            width: 120,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params) => (
+                <Button
+                    size="small"
+                    startIcon={<ReviewsIcon />}
+                    onClick={() => handleViewReviews(params.row.id)}
+                >
+                    Vezi
+                </Button>
+            )
+        });
+
         if (canManage) {
             baseColumns.push({
                 field: 'actions',
@@ -319,6 +345,17 @@ function RoomList() {
             <Paper sx={{ p: 4, height: '80vh', width: '100%' }}>
                 <TableSkeleton rows={10} />
             </Paper>
+        );
+    }
+
+    if (reviewsOpen) {
+        return (
+            <>
+                <Button onClick={() => setReviewsOpen(false)} sx={{ mb: 2 }}>
+                    &larr; Înapoi la lista de camere
+                </Button>
+                <RoomReviews roomId={selectedRoomId} />
+            </>
         );
     }
 
