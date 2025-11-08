@@ -41,6 +41,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/rooms/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/room/**").permitAll()
 
                         .requestMatchers("/api/dashboard/**").authenticated()
 
@@ -58,6 +59,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/client/my-reservations").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/reservations").hasAuthority("ROLE_GUEST")
+                        .requestMatchers("/api/client/reviews").hasAuthority("ROLE_GUEST")
+                        .requestMatchers("/api/client/my-reviews").hasAuthority("ROLE_GUEST")
 
                         .anyRequest().authenticated()
                 )
