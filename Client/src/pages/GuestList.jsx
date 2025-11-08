@@ -43,6 +43,13 @@ function GuestList() {
     useEffect(() => {
         if (auth.token) fetchGuests();
     }, [auth.token, fetchGuests]);
+    
+    const guestsWithRowNumber = useMemo(() => {
+        return guests.map((guest, index) => ({
+            ...guest,
+            rowNumber: index + 1
+        }));
+    }, [guests]);
 
     const handleSaveGuest = async (guestData, isEditing) => {
         try {
@@ -157,11 +164,13 @@ function GuestList() {
     const columns = useMemo(() => {
         const baseColumns = [
             { 
-                field: 'id', 
-                headerName: 'ID', 
+                field: 'rowNumber', 
+                headerName: 'Nr.', 
                 width: 80,
                 headerAlign: 'center',
                 align: 'center',
+                sortable: false,
+                filterable: false
             },
             { 
                 field: 'name', 
@@ -353,7 +362,7 @@ function GuestList() {
 
                     <Box sx={{ height: 'calc(100% - 160px)' }}>
                         <DataGrid
-                            rows={guests}
+                            rows={guestsWithRowNumber}
                             columns={columns}
                             loading={loading}
                             pageSizeOptions={[10, 25, 50, 100]}

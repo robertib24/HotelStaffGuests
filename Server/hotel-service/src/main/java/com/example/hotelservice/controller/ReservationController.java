@@ -56,4 +56,10 @@ public class ReservationController {
         ReservationDTO savedReservation = reservationService.createReservationForClient(request, principal.getName());
         return new ResponseEntity<>(savedReservation, HttpStatus.CREATED);
     }
+
+    @DeleteMapping("/api/client/my-reservations/{id}")
+    public ResponseEntity<Void> deleteClientReservation(@PathVariable Long id, Principal principal) {
+        reservationService.deleteReservationForClient(id, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
 }
