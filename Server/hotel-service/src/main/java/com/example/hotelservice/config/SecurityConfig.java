@@ -57,7 +57,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/guests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
                         .requestMatchers("/api/reservations/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
 
+                        .requestMatchers("/api/client/profile").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/my-reservations").hasAuthority("ROLE_GUEST")
+                        .requestMatchers(HttpMethod.DELETE, "/api/client/my-reservations/{id}").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/reservations").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/reviews").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/my-reviews").hasAuthority("ROLE_GUEST")

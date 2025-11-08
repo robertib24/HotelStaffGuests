@@ -130,6 +130,24 @@ public class ReservationService {
         reservationRepository.delete(reservation);
     }
 
+    @Transactional
+    public void deleteReservationForClient(Long id, String guestEmail) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Rezervarea cu id " + id + " nu a fost găsită."));
+
+        if (!reservation.getGuest().getEmail().equals(guestEmail)) {
+            throw new InvalidRequestException("Nu aveți permisiunea să anulați această rezervare.");
+        }
+
+        Room room = reservation.getRoom();
+        room.setStatus("Necesită Curățenie");
+        roomRepository.save(room);
+
+        emailService.sendReservationCancellation(reservation);
+
+        reservationRepository.delete(reservation);
+    }
+
     private void validateReservationDates(LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate) || startDate.isEqual(endDate)) {
             throw new InvalidRequestException("Data de sfârșit trebuie să fie după data de început.");
