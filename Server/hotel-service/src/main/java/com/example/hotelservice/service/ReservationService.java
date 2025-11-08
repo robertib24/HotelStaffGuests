@@ -27,13 +27,16 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
+    private final EmailService emailService;
 
     public ReservationService(ReservationRepository reservationRepository,
                               GuestRepository guestRepository,
-                              RoomRepository roomRepository) {
+                              RoomRepository roomRepository,
+                              EmailService emailService) {
         this.reservationRepository = reservationRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
+        this.emailService = emailService;
     }
 
     public List<ReservationDTO> getAllReservations() {
@@ -60,6 +63,9 @@ public class ReservationService {
 
         Reservation reservation = buildReservation(guest, room, request.getStartDate(), request.getEndDate());
         Reservation savedReservation = reservationRepository.save(reservation);
+
+        emailService.sendReservationConfirmation(savedReservation);
+
         return new ReservationDTO(savedReservation);
     }
 
@@ -75,6 +81,9 @@ public class ReservationService {
 
         Reservation reservation = buildReservation(guest, room, request.getStartDate(), request.getEndDate());
         Reservation savedReservation = reservationRepository.save(reservation);
+
+        emailService.sendReservationConfirmation(savedReservation);
+
         return new ReservationDTO(savedReservation);
     }
 
@@ -101,6 +110,9 @@ public class ReservationService {
         reservation.setTotalPrice(totalPrice);
 
         Reservation savedReservation = reservationRepository.save(reservation);
+
+        emailService.sendReservationConfirmation(savedReservation);
+
         return new ReservationDTO(savedReservation);
     }
 
@@ -112,6 +124,8 @@ public class ReservationService {
         Room room = reservation.getRoom();
         room.setStatus("Necesită Curățenie");
         roomRepository.save(room);
+
+        emailService.sendReservationCancellation(reservation);
 
         reservationRepository.delete(reservation);
     }
