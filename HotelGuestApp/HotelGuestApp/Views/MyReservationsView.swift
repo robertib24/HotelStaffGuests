@@ -5,52 +5,52 @@ struct MyReservationsView: View {
     @State private var reservations = [Reservation]()
     @State private var isLoading = true
     @State private var errorMessage: String?
-    
     @State private var reservationToCancel: Reservation?
     @State private var showCancelAlert = false
     
     var body: some View {
         NavigationStack {
-            Group {
+            ZStack {
+                Color("background")
+                    .ignoresSafeArea()
+                
                 if isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    LoadingView()
                 } else if let errorMessage = errorMessage {
-                    Text("Eroare: \(errorMessage)")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ErrorView(message: errorMessage) {
+                        Task { await loadReservations() }
+                    }
                 } else if reservations.isEmpty {
-                    VStack {
-                        Image(systemName: "list.bullet.rectangle.portrait")
-                            .font(.system(size: 60))
-                            .foregroundColor(.theme.textSecondary)
-                        Text("Nu ai nicio rezervare.")
-                            .font(.headline)
-                            .foregroundColor(.theme.textSecondary)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    EmptyStateView(
+                        icon: "calendar.badge.exclamationmark",
+                        title: "Nicio rezervare",
+                        message: "Nu ai nicio rezervare activă.\nExploreaază camerele disponibile!"
+                    )
                 } else {
-                    List {
-                        ForEach(reservations) { reservation in
-                            ReservationRowView(reservation: reservation)
-                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                    Button(role: .destructive) {
-                                        reservationToCancel = reservation
-                                        showCancelAlert = true
-                                    } label: {
-                                        Label("Anulează", systemImage: "trash.fill")
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(reservations) { reservation in
+                                ReservationCard(reservation: reservation)
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                        Button(role: .destructive) {
+                                            reservationToCancel = reservation
+                                            showCancelAlert = true
+                                        } label: {
+                                            Label("Anulează", systemImage: "trash.fill")
+                                        }
                                     }
-                                }
-                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                                .listRowBackground(Color.theme.background)
-                                .listRowSeparator(.hidden)
+                            }
                         }
+                        .padding()
                     }
-                    .listStyle(.plain)
                 }
             }
-            .background(Color.theme.background.ignoresSafeArea())
             .navigationTitle("Rezervările Mele")
+            .navigationBarTitleDisplayMode(.large)
             .task {
+                await loadReservations()
+            }
+            .refreshable {
                 await loadReservations()
             }
             .alert("Confirmare Anulare", isPresented: $showCancelAlert, presenting: reservationToCancel) { reservation in
@@ -89,60 +89,205 @@ struct MyReservationsView: View {
     }
 }
 
-struct ReservationRowView: View {
+struct ReservationCard: View {
     let reservation: Reservation
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(reservation.reservationCode)
-                    .font(.caption.bold())
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.theme.blue.opacity(0.2))
-                    .foregroundColor(.theme.blue)
-                    .cornerRadius(6)
-                Spacer()
-                Text("Total: \(String(format: "%.2f", reservation.totalPrice)) RON")
-                    .font(.headline)
-                    .foregroundColor(.theme.green)
-            }
-            
-            Text("Camera \(reservation.roomNumber) (\(reservation.roomType))")
-                .font(.headline)
-                .foregroundColor(.theme.textPrimary)
-            
-            HStack(spacing: 16) {
-                VStack(alignment: .leading) {
-                    Text("Check-in")
-                        .font(.caption)
-                        .foregroundColor(.theme.textSecondary)
-                    Text(formatDate(reservation.startDate))
-                        .font(.subheadline.weight(.medium))
-                        .foregroundColor(.theme.textPrimary)
-                }
-                Image(systemName: "arrow.right")
-                    .foregroundColor(.theme.textSecondary)
-                VStack(alignment: .leading) {
-                    Text("Check-out")
-                        .font(.caption)
-                        .foregroundColor(.theme.textSecondary)
-                    Text(formatDate(reservation.endDate))
-                        .font(.subheadline.weight(.medium))
-                        .foregroundColor(.theme.textPrimary)
-                }
-            }
+    var daysUntilCheckIn: Int {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        if let startDate = formatter.date(from: reservation.startDate) {
+            return Calendar.current.dateComponents([.day], from: Date(), to: startDate).day ?? 0
         }
-        .padding()
-        .background(Color.theme.formBackground)
-        .cornerRadius(16)
+        return 0
     }
     
-    private func formatDate(_ dateString: String) -> String {
+    var isUpcoming: Bool {
+        daysUntilCheckIn >= 0
+    }
+    
+    var numberOfNights: Int {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        if let start = formatter.date(from: reservation.startDate),
+           let end = formatter.date(from: reservation.endDate) {
+            return Calendar.current.dateComponents([.day], from: start, to: end).day ?? 1
+        }
+        return 1
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color("blue"), Color("purple")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60, height: 60)
+                    
+                    Image(systemName: roomTypeIcon)
+                        .font(.title2)
+                        .foregroundColor(.white)
+                }
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(reservation.roomType)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(Color("textPrimary"))
+                        
+                        Spacer()
+                        
+                        Text(reservation.reservationCode)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color("blue").opacity(0.2))
+                            .foregroundColor(Color("blue"))
+                            .cornerRadius(8)
+                    }
+                    
+                    Text("Camera \(reservation.roomNumber)")
+                        .font(.subheadline)
+                        .foregroundColor(Color("textSecondary"))
+                    
+                    if isUpcoming {
+                        if daysUntilCheckIn == 0 {
+                            HStack(spacing: 4) {
+                                Image(systemName: "clock.fill")
+                                    .font(.caption)
+                                Text("Check-in astăzi")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(Color("green"))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color("green").opacity(0.2))
+                            .cornerRadius(6)
+                        } else {
+                            HStack(spacing: 4) {
+                                Image(systemName: "calendar")
+                                    .font(.caption)
+                                Text("Peste \(daysUntilCheckIn) zile")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(Color("blue"))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color("blue").opacity(0.2))
+                            .cornerRadius(6)
+                        }
+                    }
+                }
+            }
+            .padding()
+            
+            Divider()
+                .background(Color("textSecondary").opacity(0.3))
+            
+            HStack(spacing: 24) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar.badge.clock")
+                            .font(.caption)
+                        Text("Check-in")
+                            .font(.caption)
+                    }
+                    .foregroundColor(Color("textSecondary"))
+                    
+                    Text(formatDate(reservation.startDate))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color("textPrimary"))
+                }
+                
+                Image(systemName: "arrow.right")
+                    .foregroundColor(Color("textSecondary"))
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar.badge.checkmark")
+                            .font(.caption)
+                        Text("Check-out")
+                            .font(.caption)
+                    }
+                    .foregroundColor(Color("textSecondary"))
+                    
+                    Text(formatDate(reservation.endDate))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color("textPrimary"))
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 6) {
+                    Text("\(numberOfNights)")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("blue"))
+                    Text(numberOfNights == 1 ? "noapte" : "nopți")
+                        .font(.caption)
+                        .foregroundColor(Color("textSecondary"))
+                }
+            }
+            .padding()
+            .background(Color("background"))
+            
+            Divider()
+                .background(Color("textSecondary").opacity(0.3))
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Total")
+                        .font(.caption)
+                        .foregroundColor(Color("textSecondary"))
+                    Text("\(String(format: "%.2f", reservation.totalPrice)) RON")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color("green"))
+                }
+                
+                Spacer()
+                
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(Color("green"))
+            }
+            .padding()
+        }
+        .background(Color("formBackground"))
+        .cornerRadius(20)
+        .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+    }
+    
+    var roomTypeIcon: String {
+        switch reservation.roomType {
+        case "Single": return "bed.double"
+        case "Double": return "bed.double.fill"
+        case "Suite": return "building.2"
+        case "Deluxe": return "star.fill"
+        case "Presidential": return "crown.fill"
+        default: return "bed.double"
+        }
+    }
+    
+    func formatDate(_ dateString: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         if let date = formatter.date(from: dateString) {
-            return date.formatted(date: .abbreviated, time: .omitted)
+            let displayFormatter = DateFormatter()
+            displayFormatter.dateFormat = "dd MMM yyyy"
+            displayFormatter.locale = Locale(identifier: "ro_RO")
+            return displayFormatter.string(from: date)
         }
         return dateString
     }
