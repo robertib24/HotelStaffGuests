@@ -15,7 +15,7 @@ struct HotelGuestApp: App {
             }
             .environmentObject(apiService)
             .preferredColorScheme(.dark)
-            .accentColor(.theme.blue)
+            .tint(Color("blue"))
         }
     }
 }
