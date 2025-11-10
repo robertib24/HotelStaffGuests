@@ -16,6 +16,7 @@ import ReservationModal from '../components/ReservationModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton, ChartSkeleton } from '../components/LoadingSkeletons';
 import ReservationCalendar from '../components/ReservationCalendar';
+import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function ReservationList() {
     const [reservations, setReservations] = useState([]);
@@ -118,61 +119,30 @@ function ReservationList() {
         setEditingReservation(null);
     };
 
-    const exportToCSV = () => {
-        const headers = ['Cod Rezervare', 'Nume Oaspete', 'Cameră', 'Tip Cameră', 'Check-in', 'Check-out', 'Preț Total'];
-        let csvContent = headers.join(',') + '\n';
-        
-        reservations.forEach(r => {
-            const row = [r.reservationCode, r.guestName, r.roomNumber, r.roomType, r.startDate, r.endDate, r.totalPrice];
-            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'rezervari.csv');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportCSV = () => {
+        const dataToExport = reservations.map(r => ({
+            'Cod Rezervare': r.reservationCode,
+            'Nume Oaspete': r.guestName,
+            'Cameră': r.roomNumber,
+            'Tip Cameră': r.roomType,
+            'Check-in': r.startDate,
+            'Check-out': r.endDate,
+            'Preț Total': r.totalPrice
+        }));
+        exportToCSV(dataToExport, 'rezervari.csv');
     };
 
-    const exportToExcel = () => {
-        const headers = ['Cod Rezervare', 'Nume Oaspete', 'Cameră', 'Tip Cameră', 'Check-in', 'Check-out', 'Preț Total'];
-        let tableHTML = '<table><thead><tr>';
-        
-        headers.forEach(header => {
-            tableHTML += `<th>${header}</th>`;
-        });
-        tableHTML += '</tr></thead><tbody>';
-        
-        reservations.forEach(r => {
-            tableHTML += '<tr>';
-            tableHTML += `<td>${r.reservationCode}</td>`;
-            tableHTML += `<td>${r.guestName}</td>`;
-            tableHTML += `<td>${r.roomNumber}</td>`;
-            tableHTML += `<td>${r.roomType}</td>`;
-            tableHTML += `<td>${r.startDate}</td>`;
-            tableHTML += `<td>${r.endDate}</td>`;
-            tableHTML += `<td>${r.totalPrice}</td>`;
-            tableHTML += '</tr>';
-        });
-        tableHTML += '</tbody></table>';
-
-        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'rezervari.xlsx');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportExcel = () => {
+        const dataToExport = reservations.map(r => ({
+            'Cod Rezervare': r.reservationCode,
+            'Nume Oaspete': r.guestName,
+            'Cameră': r.roomNumber,
+            'Tip Cameră': r.roomType,
+            'Check-in': r.startDate,
+            'Check-out': r.endDate,
+            'Preț Total': r.totalPrice
+        }));
+        exportToExcel(dataToExport, 'rezervari.xlsx');
     };
     
     const columns = useMemo(() => {
@@ -389,7 +359,7 @@ function ReservationList() {
                     {viewMode === 'list' && (
                         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                             <Button 
-                                onClick={exportToCSV} 
+                                onClick={handleExportCSV} 
                                 variant="outlined" 
                                 size="small" 
                                 startIcon={<UploadFileIcon />}
@@ -397,7 +367,7 @@ function ReservationList() {
                                 Export CSV
                             </Button>
                             <Button 
-                                onClick={exportToExcel} 
+                                onClick={handleExportExcel} 
                                 variant="outlined" 
                                 size="small" 
                                 startIcon={<UploadFileIcon />}

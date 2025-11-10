@@ -13,6 +13,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AddGuestModal from '../components/AddGuestModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton } from '../components/LoadingSkeletons';
+import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function GuestList() {
     const [guests, setGuests] = useState([]);
@@ -108,57 +109,22 @@ function GuestList() {
         setEditingGuest(null);
     };
 
-    const exportToCSV = () => {
-        const headers = ['ID', 'Nume', 'Email'];
-        let csvContent = headers.join(',') + '\n';
-        
-        guests.forEach(guest => {
-            const row = [guest.id, guest.name, guest.email];
-            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'oaspeti.csv');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportCSV = () => {
+        const dataToExport = guests.map(guest => ({
+            ID: guest.id,
+            Nume: guest.name,
+            Email: guest.email
+        }));
+        exportToCSV(dataToExport, 'oaspeti.csv');
     };
 
-    const exportToExcel = () => {
-        const headers = ['ID', 'Nume', 'Email'];
-        let tableHTML = '<table><thead><tr>';
-        
-        headers.forEach(header => {
-            tableHTML += `<th>${header}</th>`;
-        });
-        tableHTML += '</tr></thead><tbody>';
-        
-        guests.forEach(guest => {
-            tableHTML += '<tr>';
-            tableHTML += `<td>${guest.id}</td>`;
-            tableHTML += `<td>${guest.name}</td>`;
-            tableHTML += `<td>${guest.email}</td>`;
-            tableHTML += '</tr>';
-        });
-        tableHTML += '</tbody></table>';
-
-        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'oaspeti.xlsx');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportExcel = () => {
+        const dataToExport = guests.map(guest => ({
+            ID: guest.id,
+            Nume: guest.name,
+            Email: guest.email
+        }));
+        exportToExcel(dataToExport, 'oaspeti.xlsx');
     };
 
     const columns = useMemo(() => {
@@ -343,7 +309,7 @@ function GuestList() {
 
                     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                         <Button 
-                            onClick={exportToCSV} 
+                            onClick={handleExportCSV} 
                             variant="outlined" 
                             size="small" 
                             startIcon={<UploadFileIcon />}
@@ -351,7 +317,7 @@ function GuestList() {
                             Export CSV
                         </Button>
                         <Button 
-                            onClick={exportToExcel} 
+                            onClick={handleExportExcel} 
                             variant="outlined" 
                             size="small" 
                             startIcon={<UploadFileIcon />}
