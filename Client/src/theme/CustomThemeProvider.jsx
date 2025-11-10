@@ -11,27 +11,27 @@ const ThemeContext = createContext();
 const themes = {
     dark: {
         blue: {
-            name: 'Albastru Clasic',
+            name: 'Default',
             primary: '#3b82f6',
             secondary: '#8b5cf6',
         },
         purple: {
-            name: 'Violet Modern',
+            name: 'Violet',
             primary: '#8b5cf6',
             secondary: '#ec4899',
         },
         green: {
-            name: 'Verde Natural',
+            name: 'Green',
             primary: '#10b981',
             secondary: '#3b82f6',
         },
         orange: {
-            name: 'Portocaliu Energic',
+            name: 'Orange',
             primary: '#f59e0b',
             secondary: '#ef4444',
         },
         teal: {
-            name: 'Teal Profesional',
+            name: 'Teal',
             primary: '#14b8a6',
             secondary: '#06b6d4',
         }
@@ -223,132 +223,123 @@ export function CustomThemeProvider({ children }) {
         toggleMode,
         setColorScheme,
         currentColors,
+        themes,
     };
 
     return (
         <ThemeContext.Provider value={value}>
             <MuiThemeProvider theme={theme}>
+                {children}
+
                 <Box
                     sx={{
-                        minHeight: '100vh',
-                        background: mode === 'dark'
-                            ? 'linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 50%, #0a0e1a 100%)'
-                            : 'linear-gradient(135deg, #f9fafb 0%, #e5e7eb 50%, #f9fafb 100%)',
-                        transition: 'background 0.5s ease',
+                        position: 'fixed',
+                        bottom: 24,
+                        right: 24,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        zIndex: 1000,
                     }}
                 >
-                    {children}
-
-                    <Box
-                        sx={{
-                            position: 'fixed',
-                            bottom: 24,
-                            right: 24,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 2,
-                            zIndex: 1000,
-                        }}
-                    >
-                        <Tooltip title={`Schimbă în tema ${mode === 'dark' ? 'light' : 'dark'}`} placement="left">
-                            <IconButton
-                                onClick={toggleMode}
-                                sx={{
+                    <Tooltip title={`Schimbă în tema ${mode === 'dark' ? 'light' : 'dark'}`} placement="left">
+                        <IconButton
+                            onClick={toggleMode}
+                            sx={{
+                                bgcolor: 'background.paper',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                '&:hover': {
                                     bgcolor: 'background.paper',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                    '&:hover': {
-                                        bgcolor: 'background.paper',
-                                        transform: 'scale(1.1) rotate(180deg)',
-                                    },
-                                    transition: 'all 0.3s ease',
-                                }}
-                            >
-                                {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-                            </IconButton>
-                        </Tooltip>
+                                    transform: 'scale(1.1) rotate(180deg)',
+                                },
+                                transition: 'all 0.3s ease',
+                            }}
+                        >
+                            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                        </IconButton>
+                    </Tooltip>
 
-                        <Tooltip title="Schimbă culoarea" placement="left">
-                            <IconButton
-                                onClick={() => setShowPalette(!showPalette)}
-                                sx={{
+                    <Tooltip title="Schimbă culoarea" placement="left">
+                        <IconButton
+                            onClick={() => setShowPalette(!showPalette)}
+                            sx={{
+                                bgcolor: 'background.paper',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                '&:hover': {
                                     bgcolor: 'background.paper',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                    '&:hover': {
-                                        bgcolor: 'background.paper',
-                                        transform: 'scale(1.1)',
-                                    },
-                                }}
-                            >
-                                <PaletteIcon sx={{ color: currentColors.primary }} />
-                            </IconButton>
-                        </Tooltip>
+                                    transform: 'scale(1.1)',
+                                },
+                            }}
+                        >
+                            <PaletteIcon sx={{ color: currentColors.primary }} />
+                        </IconButton>
+                    </Tooltip>
 
-                        <AnimatePresence>
-                            {showPalette && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                    transition={{ duration: 0.2 }}
+                    <AnimatePresence>
+                        {showPalette && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                                transition={{ duration: 0.2 }}
+                            >
+                                <Box
+                                    sx={{
+                                        bgcolor: 'background.paper',
+                                        borderRadius: 3,
+                                        p: 2,
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 1,
+                                        minWidth: 200,
+                                    }}
                                 >
-                                    <Box
-                                        sx={{
-                                            bgcolor: 'background.paper',
-                                            borderRadius: 3,
-                                            p: 2,
-                                            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 1,
-                                            minWidth: 200,
-                                        }}
-                                    >
-                                        <Box sx={{ mb: 1 }}>
-                                            <Box sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary', mb: 1 }}>
-                                                Schemă de Culori
+                                    <Box sx={{ mb: 1 }}>
+                                        <Box sx={{ fontSize: 12, fontWeight: 600, color: 'text.secondary', mb: 1 }}>
+                                            Schemă de Culori
+                                        </Box>
+                                    </Box>
+                                    {Object.entries(themes[mode]).map(([key, colors]) => (
+                                        <Box
+                                            key={key}
+                                            onClick={() => {
+                                                setColorScheme(key);
+                                                setShowPalette(false);
+                                            }}
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1.5,
+                                                p: 1.5,
+                                                borderRadius: 2,
+                                                cursor: 'pointer',
+                                                border: colorScheme === key ? `2px solid ${colors.primary}` : '2px solid transparent',
+                                                bgcolor: colorScheme === key ? `${colors.primary}15` : 'transparent',
+                                                '&:hover': {
+                                                    bgcolor: `${colors.primary}10`,
+                                                },
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                        >
+                                            <Box
+                                                sx={{
+                                                    width: 32,
+                                                    height: 32,
+                                                    borderRadius: 1.5,
+                                                    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+                                                    boxShadow: `0 4px 12px ${colors.primary}40`,
+                                                }}
+                                            />
+                                            <Box sx={{ fontSize: 13, fontWeight: 500 }}>
+                                                {colors.name}
                                             </Box>
                                         </Box>
-                                        {Object.entries(themes[mode]).map(([key, colors]) => (
-                                            <Box
-                                                key={key}
-                                                onClick={() => {
-                                                    setColorScheme(key);
-                                                    setShowPalette(false);
-                                                }}
-                                                sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.5,
-                                                    p: 1.5,
-                                                    borderRadius: 2,
-                                                    cursor: 'pointer',
-                                                    border: colorScheme === key ? `2px solid ${colors.primary}` : '2px solid transparent',
-                                                    bgcolor: colorScheme === key ? `${colors.primary}15` : 'transparent',
-                                                    '&:hover': {
-                                                        bgcolor: `${colors.primary}10`,
-                                                    },
-                                                    transition: 'all 0.2s ease',
-                                                }}
-                                            >
-                                                <Box
-                                                    sx={{
-                                                        width: 32,
-                                                        height: 32,
-                                                        borderRadius: 1.5,
-                                                        background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
-                                                        boxShadow: `0 4px 12px ${colors.primary}40`,
-                                                    }}
-                                                />
-                                                <Box sx={{ fontSize: 13, fontWeight: 500 }}>
-                                                    {colors.name}
-                                                </Box>
-                                            </Box>
-                                        ))}
-                                    </Box>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </Box>
+                                    ))}
+                                </Box>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </Box>
             </MuiThemeProvider>
         </ThemeContext.Provider>
