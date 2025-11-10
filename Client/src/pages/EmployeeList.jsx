@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import AddEmployeeModal from '../components/AddEmployeeModal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton } from '../components/LoadingSkeletons';
+import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function EmployeeList() {
     const [employees, setEmployees] = useState([]);
@@ -111,58 +112,24 @@ function EmployeeList() {
         return colors[role] || '#6b7280';
     };
 
-    const exportToCSV = () => {
-        const headers = ['ID', 'Nume', 'Email', 'Rol'];
-        let csvContent = headers.join(',') + '\n';
-        
-        employees.forEach(emp => {
-            const row = [emp.id, emp.name, emp.email, emp.role];
-            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'angajati.csv');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportCSV = () => {
+        const dataToExport = employees.map(emp => ({
+            ID: emp.id,
+            Nume: emp.name,
+            Email: emp.email,
+            Rol: emp.role
+        }));
+        exportToCSV(dataToExport, 'angajati.csv');
     };
 
-    const exportToExcel = () => {
-        const headers = ['ID', 'Nume', 'Email', 'Rol'];
-        let tableHTML = '<table><thead><tr>';
-        
-        headers.forEach(header => {
-            tableHTML += `<th>${header}</th>`;
-        });
-        tableHTML += '</tr></thead><tbody>';
-        
-        employees.forEach(emp => {
-            tableHTML += '<tr>';
-            tableHTML += `<td>${emp.id}</td>`;
-            tableHTML += `<td>${emp.name}</td>`;
-            tableHTML += `<td>${emp.email}</td>`;
-            tableHTML += `<td>${emp.role}</td>`;
-            tableHTML += '</tr>';
-        });
-        tableHTML += '</tbody></table>';
-
-        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'angajati.xlsx');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportExcel = () => {
+        const dataToExport = employees.map(emp => ({
+            ID: emp.id,
+            Nume: emp.name,
+            Email: emp.email,
+            Rol: emp.role
+        }));
+        exportToExcel(dataToExport, 'angajati.xlsx');
     };
 
     const columns = useMemo(() => {
@@ -344,7 +311,7 @@ function EmployeeList() {
 
                     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                         <Button 
-                            onClick={exportToCSV} 
+                            onClick={handleExportCSV} 
                             variant="outlined" 
                             size="small" 
                             startIcon={<UploadFileIcon />}
@@ -352,7 +319,7 @@ function EmployeeList() {
                             Export CSV
                         </Button>
                         <Button 
-                            onClick={exportToExcel} 
+                            onClick={handleExportExcel} 
                             variant="outlined" 
                             size="small" 
                             startIcon={<UploadFileIcon />}

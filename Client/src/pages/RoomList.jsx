@@ -16,6 +16,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { TableSkeleton } from '../components/LoadingSkeletons';
 import AdvancedFilters from '../components/AdvancedFilters';
 import RoomReviews from '../components/RoomReviews';
+import { exportToCSV, exportToExcel } from '../utils/exportData';
 
 function RoomList() {
     const [rooms, setRooms] = useState([]);
@@ -139,59 +140,26 @@ function RoomList() {
         return colors[type] || '#6b7280';
     };
 
-    const exportToCSV = () => {
-        const headers = ['ID', 'Număr', 'Tip', 'Preț', 'Status'];
-        let csvContent = headers.join(',') + '\n';
-        
-        filteredRooms.forEach(room => {
-            const row = [room.id, room.number, room.type, room.price, room.status];
-            csvContent += row.map(val => `"${val}"`).join(',') + '\n';
-        });
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'camere.csv');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportCSV = () => {
+        const dataToExport = filteredRooms.map(room => ({
+            ID: room.id,
+            Număr: room.number,
+            Tip: room.type,
+            Preț: room.price,
+            Status: room.status
+        }));
+        exportToCSV(dataToExport, 'camere.csv');
     };
 
-    const exportToExcel = () => {
-        const headers = ['ID', 'Număr', 'Tip', 'Preț', 'Status'];
-        let tableHTML = '<table><thead><tr>';
-        
-        headers.forEach(header => {
-            tableHTML += `<th>${header}</th>`;
-        });
-        tableHTML += '</tr></thead><tbody>';
-        
-        filteredRooms.forEach(room => {
-            tableHTML += '<tr>';
-            tableHTML += `<td>${room.id}</td>`;
-            tableHTML += `<td>${room.number}</td>`;
-            tableHTML += `<td>${room.type}</td>`;
-            tableHTML += `<td>${room.price}</td>`;
-            tableHTML += `<td>${room.status}</td>`;
-            tableHTML += '</tr>';
-        });
-        tableHTML += '</tbody></table>';
-
-        const blob = new Blob([tableHTML], { type: 'application/vnd.ms-excel' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'camere.xlsx');
-        link.style.visibility = 'hidden';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    const handleExportExcel = () => {
+        const dataToExport = filteredRooms.map(room => ({
+            ID: room.id,
+            Număr: room.number,
+            Tip: room.type,
+            Preț: room.price,
+            Status: room.status
+        }));
+        exportToExcel(dataToExport, 'camere.xlsx');
     };
 
     const columns = useMemo(() => {
@@ -439,7 +407,7 @@ function RoomList() {
 
                     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                         <Button 
-                            onClick={exportToCSV} 
+                            onClick={handleExportCSV} 
                             variant="outlined" 
                             size="small" 
                             startIcon={<UploadFileIcon />}
@@ -447,7 +415,7 @@ function RoomList() {
                             Export CSV
                         </Button>
                         <Button 
-                            onClick={exportToExcel} 
+                            onClick={handleExportExcel} 
                             variant="outlined" 
                             size="small" 
                             startIcon={<UploadFileIcon />}
