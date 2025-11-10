@@ -31,17 +31,18 @@ struct MyReservationsView: View {
                         LazyVStack(spacing: 16) {
                             ForEach(reservations) { reservation in
                                 ReservationCard(reservation: reservation)
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    .contextMenu {
                                         Button(role: .destructive) {
                                             reservationToCancel = reservation
                                             showCancelAlert = true
                                         } label: {
-                                            Label("Anulează", systemImage: "trash.fill")
+                                            Label("Anulează rezervarea", systemImage: "trash.fill")
                                         }
                                     }
+                                    .padding(.horizontal)
                             }
                         }
-                        .padding()
+                        .padding(.vertical)
                     }
                 }
             }
