@@ -4,7 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 
 const API_URL = 'http://localhost:8080/api/staff/auth';
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [token, setToken] = useState(localStorage.getItem('token'));

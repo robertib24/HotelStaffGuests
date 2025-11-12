@@ -13,6 +13,7 @@ import com.example.hotelservice.repository.GuestRepository;
 import com.example.hotelservice.repository.ReservationRepository;
 import com.example.hotelservice.repository.RoomRepository;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,15 +29,18 @@ public class ReservationService {
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
     private final EmailService emailService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public ReservationService(ReservationRepository reservationRepository,
                               GuestRepository guestRepository,
                               RoomRepository roomRepository,
-                              EmailService emailService) {
+                              EmailService emailService,
+                              SimpMessagingTemplate messagingTemplate) {
         this.reservationRepository = reservationRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
         this.emailService = emailService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public List<ReservationDTO> getAllReservations() {
@@ -66,6 +70,8 @@ public class ReservationService {
 
         emailService.sendReservationConfirmation(savedReservation);
 
+        messagingTemplate.convertAndSend("/topic/reservations", new ReservationDTO(savedReservation));
+
         return new ReservationDTO(savedReservation);
     }
 
@@ -83,6 +89,8 @@ public class ReservationService {
         Reservation savedReservation = reservationRepository.save(reservation);
 
         emailService.sendReservationConfirmation(savedReservation);
+
+        messagingTemplate.convertAndSend("/topic/reservations", new ReservationDTO(savedReservation));
 
         return new ReservationDTO(savedReservation);
     }

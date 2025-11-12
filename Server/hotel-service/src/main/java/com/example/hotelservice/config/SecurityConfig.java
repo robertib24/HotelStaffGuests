@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/staff/auth/**").permitAll()
                         .requestMatchers("/api/client/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/rooms").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/rooms/{id}").permitAll()
