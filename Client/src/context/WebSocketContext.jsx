@@ -3,6 +3,7 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import { useNotifications } from './NotificationContext';
 
 const WebSocketContext = createContext();
 
@@ -10,6 +11,7 @@ export function WebSocketProvider({ children }) {
     const stompClientRef = useRef(null);
     const { user } = useAuth();
     const { showToast } = useToast();
+    const { addNotification } = useNotifications(); 
 
     useEffect(() => {
         if (!user) return;
@@ -22,10 +24,18 @@ export function WebSocketProvider({ children }) {
 
                 stompClient.subscribe('/topic/reservations', (message) => {
                     const reservation = JSON.parse(message.body);
+                    
                     showToast(
                         `Rezervare nouă: ${reservation.guestName} - Camera ${reservation.roomNumber}`,
                         'success'
                     );
+                    
+                    addNotification({
+                        type: 'reservation',
+                        title: 'Rezervare Nouă',
+                        message: `${reservation.guestName} - Camera ${reservation.roomNumber}`,
+                        severity: 'success'
+                    });
                 });
 
                 stompClient.subscribe('/topic/notifications', (message) => {
@@ -36,6 +46,13 @@ export function WebSocketProvider({ children }) {
                             `🎉 ${notification.guestName} s-a înregistrat din aplicația mobilă!`,
                             'info'
                         );
+                        
+                        addNotification({
+                            type: 'NEW_GUEST_REGISTRATION',
+                            title: notification.title || 'Oaspete Nou',
+                            message: notification.message || `${notification.guestName} s-a înregistrat`,
+                            severity: 'info'
+                        });
                     }
                 });
             },
@@ -52,7 +69,7 @@ export function WebSocketProvider({ children }) {
                 stompClientRef.current.deactivate();
             }
         };
-    }, [user, showToast]);
+    }, [user, showToast, addNotification]);
 
     return (
         <WebSocketContext.Provider value={{}}>
