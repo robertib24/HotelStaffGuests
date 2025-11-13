@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Snackbar, Alert, Badge, IconButton, Menu, Box, Typography, Divider } from '@mui/material';
+import { Badge, IconButton, Menu, Box, Typography, Divider } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,11 +9,6 @@ const NotificationContext = createContext();
 export function NotificationProvider({ children }) {
     const [notifications, setNotifications] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
-    const [toast, setToast] = useState({
-        open: false,
-        message: '',
-        severity: 'info'
-    });
 
     useEffect(() => {
         const savedNotifications = localStorage.getItem('hotel_notifications');
@@ -44,18 +39,6 @@ export function NotificationProvider({ children }) {
             const updated = [newNotification, ...prev];
             console.log('Updated notifications:', updated);
             return updated;
-        });
-        
-        const severityMap = {
-            'NEW_GUEST_REGISTRATION': 'info',
-            'RESERVATION_CANCELLED': 'warning',
-            'reservation': 'success'
-        };
-        
-        setToast({
-            open: true,
-            message: notification.message,
-            severity: severityMap[notification.type] || notification.severity || 'info'
         });
     }, []);
 
@@ -258,23 +241,6 @@ export function NotificationProvider({ children }) {
                     </Box>
                 )}
             </Menu>
-
-            <Snackbar
-                open={toast.open}
-                autoHideDuration={4000}
-                onClose={() => setToast(prev => ({ ...prev, open: false }))}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                sx={{ mt: 8 }}
-            >
-                <Alert 
-                    onClose={() => setToast(prev => ({ ...prev, open: false }))} 
-                    severity={toast.severity}
-                    variant="filled"
-                    sx={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' }}
-                >
-                    {toast.message}
-                </Alert>
-            </Snackbar>
         </NotificationContext.Provider>
     );
 }
