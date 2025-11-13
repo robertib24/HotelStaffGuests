@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Snackbar, Alert, Badge, IconButton, Menu, MenuItem, Box, Typography, Divider } from '@mui/material';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { Snackbar, Alert, Badge, IconButton, Menu, Box, Typography, Divider } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NotificationContext = createContext();
@@ -15,29 +16,46 @@ export function NotificationProvider({ children }) {
     });
 
     useEffect(() => {
-        const savedNotifications = localStorage.getItem('notifications');
+        const savedNotifications = localStorage.getItem('hotel_notifications');
         if (savedNotifications) {
-            setNotifications(JSON.parse(savedNotifications));
+            try {
+                setNotifications(JSON.parse(savedNotifications));
+            } catch (e) {
+                console.error('Error loading notifications:', e);
+            }
         }
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('notifications', JSON.stringify(notifications));
+        localStorage.setItem('hotel_notifications', JSON.stringify(notifications));
     }, [notifications]);
 
     const addNotification = useCallback((notification) => {
         const newNotification = {
-            id: Date.now(),
+            id: Date.now() + Math.random(),
             timestamp: new Date().toISOString(),
             read: false,
             ...notification
         };
-        setNotifications(prev => [newNotification, ...prev]);
+        
+        console.log('Adding notification:', newNotification);
+        
+        setNotifications(prev => {
+            const updated = [newNotification, ...prev];
+            console.log('Updated notifications:', updated);
+            return updated;
+        });
+        
+        const severityMap = {
+            'NEW_GUEST_REGISTRATION': 'info',
+            'RESERVATION_CANCELLED': 'warning',
+            'reservation': 'success'
+        };
         
         setToast({
             open: true,
             message: notification.message,
-            severity: notification.type || 'info'
+            severity: severityMap[notification.type] || notification.severity || 'info'
         });
     }, []);
 
@@ -61,6 +79,7 @@ export function NotificationProvider({ children }) {
 
     const clearAll = useCallback(() => {
         setNotifications([]);
+        localStorage.removeItem('hotel_notifications');
     }, []);
 
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -79,6 +98,8 @@ export function NotificationProvider({ children }) {
             error: '❌',
             warning: '⚠️',
             info: 'ℹ️',
+            NEW_GUEST_REGISTRATION: '🎉',
+            RESERVATION_CANCELLED: '🚫',
             reservation: '📅',
             payment: '💰',
             room: '🛏️'
@@ -122,6 +143,7 @@ export function NotificationProvider({ children }) {
                         bgcolor: 'background.paper',
                         transform: 'scale(1.1)',
                     },
+                    transition: 'all 0.3s ease',
                     zIndex: 1000,
                 }}
             >
@@ -147,13 +169,12 @@ export function NotificationProvider({ children }) {
                         Notificări ({unreadCount})
                     </Typography>
                     {notifications.length > 0 && (
-                        <Box>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
                             <Typography
                                 variant="caption"
-                                sx={{ cursor: 'pointer', color: 'primary.main', mr: 2 }}
+                                sx={{ cursor: 'pointer', color: 'primary.main' }}
                                 onClick={() => {
                                     markAllAsRead();
-                                    handleClose();
                                 }}
                             >
                                 Marchează toate
@@ -189,11 +210,13 @@ export function NotificationProvider({ children }) {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
                                 >
-                                    <MenuItem
+                                    <Box
                                         onClick={() => {
                                             markAsRead(notif.id);
                                         }}
                                         sx={{
+                                            p: 2,
+                                            cursor: 'pointer',
                                             bgcolor: notif.read ? 'transparent' : 'rgba(59, 130, 246, 0.1)',
                                             borderLeft: notif.read ? 'none' : '4px solid #3b82f6',
                                             '&:hover': {
@@ -201,35 +224,33 @@ export function NotificationProvider({ children }) {
                                             }
                                         }}
                                     >
-                                        <Box sx={{ width: '100%' }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'start', gap: 1 }}>
-                                                <Typography sx={{ fontSize: 20 }}>
-                                                    {getNotificationIcon(notif.type)}
+                                        <Box sx={{ display: 'flex', alignItems: 'start', gap: 1 }}>
+                                            <Typography sx={{ fontSize: 20 }}>
+                                                {getNotificationIcon(notif.type)}
+                                            </Typography>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="body2" fontWeight={notif.read ? 'normal' : 'bold'}>
+                                                    {notif.title}
                                                 </Typography>
-                                                <Box sx={{ flex: 1 }}>
-                                                    <Typography variant="body2" fontWeight={notif.read ? 'normal' : 'bold'}>
-                                                        {notif.title}
-                                                    </Typography>
-                                                    <Typography variant="caption" color="text.secondary">
-                                                        {notif.message}
-                                                    </Typography>
-                                                    <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'primary.main' }}>
-                                                        {formatTimestamp(notif.timestamp)}
-                                                    </Typography>
-                                                </Box>
-                                                <IconButton
-                                                    size="small"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        deleteNotification(notif.id);
-                                                    }}
-                                                    sx={{ ml: 1 }}
-                                                >
-                                                    ×
-                                                </IconButton>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {notif.message}
+                                                </Typography>
+                                                <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'primary.main' }}>
+                                                    {formatTimestamp(notif.timestamp)}
+                                                </Typography>
                                             </Box>
+                                            <IconButton
+                                                size="small"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteNotification(notif.id);
+                                                }}
+                                                sx={{ ml: 1 }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
                                         </Box>
-                                    </MenuItem>
+                                    </Box>
                                     <Divider />
                                 </motion.div>
                             ))}

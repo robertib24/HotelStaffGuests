@@ -18,8 +18,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,6 +137,17 @@ public class ReservationService {
         room.setStatus("Necesită Curățenie");
         roomRepository.save(room);
 
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("type", "RESERVATION_CANCELLED");
+        notification.put("title", "Rezervare Anulată");
+        notification.put("message", reservation.getGuest().getName() + " a anulat rezervarea pentru camera " + room.getNumber());
+        notification.put("reservationCode", reservation.getReservationCode());
+        notification.put("guestName", reservation.getGuest().getName());
+        notification.put("roomNumber", room.getNumber());
+        notification.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
+
         emailService.sendReservationCancellation(reservation);
 
         reservationRepository.delete(reservation);
@@ -150,6 +165,17 @@ public class ReservationService {
         Room room = reservation.getRoom();
         room.setStatus("Necesită Curățenie");
         roomRepository.save(room);
+
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("type", "RESERVATION_CANCELLED");
+        notification.put("title", "Rezervare Anulată");
+        notification.put("message", reservation.getGuest().getName() + " a anulat rezervarea pentru camera " + room.getNumber() + " din aplicația mobilă");
+        notification.put("reservationCode", reservation.getReservationCode());
+        notification.put("guestName", reservation.getGuest().getName());
+        notification.put("roomNumber", room.getNumber());
+        notification.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
 
         emailService.sendReservationCancellation(reservation);
 
