@@ -1,9 +1,4 @@
 import { Routes, Route } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { useAuth } from './context/AuthContext';
-import { useToast } from './context/ToastContext';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleBasedRoute from './components/RoleBasedRoute';
@@ -20,35 +15,6 @@ import './App.css';
 function App() {
   const adminRoles = ['ROLE_Admin'];
   const managerRoles = ['ROLE_Admin', 'ROLE_Manager'];
-
-  const { showToast } = useToast();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      const stompClient = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-        reconnectDelay: 5000,
-        onConnect: () => {
-          stompClient.subscribe('/topic/reservations', (message) => {
-            const reservation = JSON.parse(message.body);
-            if (showToast) {
-              showToast(`Rezervare nouă: ${reservation.guestFirstName} ${reservation.guestLastName} - Camera ${reservation.roomNumber}`, 'success');
-            }
-          });
-        },
-        onStompError: (frame) => {
-          console.error('Eroare STOMP:', frame);
-        },
-      });
-
-      stompClient.activate();
-
-      return () => {
-        stompClient.deactivate();
-      };
-    }
-  }, [user, showToast]);
 
   return (
     <Routes>

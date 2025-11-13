@@ -6,6 +6,7 @@ import com.example.hotelservice.dto.auth.GuestRegisterDTO;
 import com.example.hotelservice.entity.Guest;
 import com.example.hotelservice.exception.DuplicateResourceException;
 import com.example.hotelservice.repository.GuestRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,15 +27,18 @@ public class GuestAuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public GuestAuthService(GuestRepository guestRepository,
                             PasswordEncoder passwordEncoder,
                             JwtService jwtService,
-                            AuthenticationManager authenticationManager) {
+                            AuthenticationManager authenticationManager,
+                            SimpMessagingTemplate messagingTemplate) {
         this.guestRepository = guestRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public AuthResponseDTO registerGuest(GuestRegisterDTO request) {
@@ -45,9 +51,19 @@ public class GuestAuthService {
         guest.setEmail(request.getEmail());
         guest.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        guestRepository.save(guest);
+        Guest savedGuest = guestRepository.save(guest);
 
-        return generateAuthResponse(guest);
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("type", "NEW_GUEST_REGISTRATION");
+        notification.put("title", "Oaspete Nou Înregistrat");
+        notification.put("message", savedGuest.getName() + " s-a înregistrat în aplicația mobilă");
+        notification.put("guestName", savedGuest.getName());
+        notification.put("guestEmail", savedGuest.getEmail());
+        notification.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
+
+        return generateAuthResponse(savedGuest);
     }
 
     public AuthResponseDTO loginGuest(AuthRequestDTO request) {
