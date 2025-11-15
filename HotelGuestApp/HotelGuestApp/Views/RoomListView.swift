@@ -310,7 +310,7 @@ struct RoomCard: View {
                     .foregroundColor(.white.opacity(0.4))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                StatusBadge(status: room.status)
+                RoomListStatusBadge(status: room.status)
                     .padding(12)
             }
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -375,7 +375,7 @@ struct RoomCard: View {
     }
 }
 
-struct StatusBadge: View {
+private struct RoomListStatusBadge: View {
     let status: String
 
     var statusColor: Color {

@@ -51,8 +51,8 @@ struct RoomDetailView: View {
                     Image(systemName: roomTypeIcon)
                         .font(.system(size: 120))
                         .foregroundColor(.white.opacity(0.3))
-                    
-                    StatusBadge(status: room.status)
+
+                    RoomDetailStatusBadge(status: room.status)
                         .padding(20)
                 }
                 
@@ -355,7 +355,7 @@ private struct RoomDetailEmptyView: View {
     }
 }
 
-private struct StatusBadge: View {
+private struct RoomDetailStatusBadge: View {
     let status: String
 
     var statusColor: Color {
