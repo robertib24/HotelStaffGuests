@@ -58,7 +58,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/guests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
                         .requestMatchers("/api/reservations/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
 
+                        .requestMatchers("/api/staff/room-service-requests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager")
+                        .requestMatchers("/api/staff/housekeeping-requests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Cleaner")
+
                         .requestMatchers("/api/client/profile").hasAuthority("ROLE_GUEST")
+                        .requestMatchers("/api/client/chat").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/my-reservations").hasAuthority("ROLE_GUEST")
                         .requestMatchers(HttpMethod.DELETE, "/api/client/my-reservations/{id}").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/reservations").hasAuthority("ROLE_GUEST")
@@ -78,7 +82,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
