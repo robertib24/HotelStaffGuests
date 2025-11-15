@@ -6,65 +6,16 @@ struct ChatView: View {
     @State private var newMessage: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
-    @State private var isExpanded: Bool = false
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            if isExpanded {
-                chatInterface
-                    .transition(.scale.combined(with: .opacity))
+        NavigationView {
+            VStack(spacing: 0) {
+                messageList
+                messageInput
             }
-
-            floatingButton
-                .padding(.trailing, 20)
-                .padding(.bottom, 20)
+            .navigationTitle("Asistent Virtual")
+            .navigationBarTitleDisplayMode(.large)
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isExpanded)
-    }
-
-    private var floatingButton: some View {
-        Button(action: {
-            isExpanded.toggle()
-        }) {
-            Image(systemName: isExpanded ? "xmark.circle.fill" : "message.fill")
-                .font(.system(size: 24))
-                .foregroundColor(.white)
-                .frame(width: 60, height: 60)
-                .background(
-                    LinearGradient(
-                        colors: [Color.blue, Color.purple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(Circle())
-                .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
-        }
-    }
-
-    private var chatInterface: some View {
-        VStack(spacing: 0) {
-            header
-            messageList
-            messageInput
-        }
-        .frame(width: UIScreen.main.bounds.width - 32, height: 500)
-        .background(Color(uiColor: .systemBackground))
-        .cornerRadius(20)
-        .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
-        .padding()
-    }
-
-    private var header: some View {
-        HStack {
-            Image(systemName: "sparkles")
-                .foregroundColor(.blue)
-            Text("Asistent Virtual")
-                .font(.headline)
-            Spacer()
-        }
-        .padding()
-        .background(Color(uiColor: .secondarySystemBackground))
     }
 
     private var messageList: some View {
