@@ -47,54 +47,34 @@ function AnimatedCounter({ value, duration = 2000 }) {
 }
 
 function StatWidget({ title, value, icon, color, trend, onClick }) {
-    const controls = useAnimation();
-
-    useEffect(() => {
-        controls.start({
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            transition: { duration: 0.6, type: "spring", stiffness: 120 }
-        });
-    }, [controls]);
-
-    const handleHover = () => {
-        controls.start({
-            scale: 1.05,
-            boxShadow: `0 20px 60px ${color}60`,
-            transition: { duration: 0.3 }
-        });
-    };
-
-    const handleHoverEnd = () => {
-        controls.start({
-            scale: 1,
-            boxShadow: `0 8px 24px ${color}30`,
-            transition: { duration: 0.3 }
-        });
-    };
+    const [isHovered, setIsHovered] = useState(false);
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.8 }}
-            whileHover={onClick ? { y: -12 } : {}}
-            onHoverStart={handleHover}
-            onHoverEnd={handleHoverEnd}
-            animate={controls}
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+            whileHover={onClick ? { y: -4 } : {}}
             style={{ height: '100%' }}
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
         >
             <Card
                 sx={{
                     height: '100%',
                     minHeight: 180,
                     background: `linear-gradient(135deg, ${color}18 0%, ${color}08 100%)`,
-                    border: `1.5px solid ${color}40`,
+                    border: 'none',
                     borderRadius: 3,
                     position: 'relative',
                     overflow: 'hidden',
                     cursor: onClick ? 'pointer' : 'default',
                     display: 'flex',
                     flexDirection: 'column',
+                    boxShadow: isHovered
+                        ? `0 20px 40px -12px ${color}50, 0 0 0 1px ${color}30`
+                        : `0 8px 16px -8px ${color}30, 0 0 0 1px ${color}20`,
+                    transition: 'box-shadow 0.3s ease-in-out',
                     '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -102,7 +82,7 @@ function StatWidget({ title, value, icon, color, trend, onClick }) {
                         right: -100,
                         width: '300px',
                         height: '300px',
-                        background: `radial-gradient(circle, ${color}40 0%, transparent 70%)`,
+                        background: `radial-gradient(circle, ${color}30 0%, transparent 70%)`,
                         animation: 'pulse 4s ease-in-out infinite',
                     },
                     '&::after': {
@@ -112,7 +92,7 @@ function StatWidget({ title, value, icon, color, trend, onClick }) {
                         left: -50,
                         width: '200px',
                         height: '200px',
-                        background: `radial-gradient(circle, ${color}20 0%, transparent 70%)`,
+                        background: `radial-gradient(circle, ${color}15 0%, transparent 70%)`,
                         animation: 'pulse 3s ease-in-out infinite reverse',
                     },
                     '@keyframes pulse': {
@@ -294,7 +274,8 @@ const ManagerDashboard = ({ stats }) => (
                             display: 'flex',
                             flexDirection: 'column',
                             background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
-                            border: '1.5px solid rgba(59, 130, 246, 0.25)',
+                            border: 'none',
+                            boxShadow: '0 8px 16px -8px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.2)',
                             position: 'relative',
                             overflow: 'hidden',
                             borderRadius: 3,
