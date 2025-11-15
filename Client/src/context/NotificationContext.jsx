@@ -3,12 +3,14 @@ import { Badge, IconButton, Menu, Box, Typography, Divider } from '@mui/material
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
     const [notifications, setNotifications] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
+    const location = useLocation();
 
     useEffect(() => {
         const savedNotifications = localStorage.getItem('hotel_notifications');
@@ -103,37 +105,39 @@ export function NotificationProvider({ children }) {
     };
 
     return (
-        <NotificationContext.Provider value={{ 
-            notifications, 
-            addNotification, 
-            markAsRead, 
+        <NotificationContext.Provider value={{
+            notifications,
+            addNotification,
+            markAsRead,
             markAllAsRead,
             deleteNotification,
             clearAll,
-            unreadCount 
+            unreadCount
         }}>
             {children}
 
-            <IconButton
-                onClick={handleClick}
-                sx={{
-                    position: 'fixed',
-                    top: 80,
-                    right: 24,
-                    bgcolor: 'background.paper',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    '&:hover': {
+            {location.pathname !== '/login' && (
+                <IconButton
+                    onClick={handleClick}
+                    sx={{
+                        position: 'fixed',
+                        top: 80,
+                        right: 24,
                         bgcolor: 'background.paper',
-                        transform: 'scale(1.1)',
-                    },
-                    transition: 'all 0.3s ease',
-                    zIndex: 1000,
-                }}
-            >
-                <Badge badgeContent={unreadCount} color="error">
-                    <NotificationsIcon />
-                </Badge>
-            </IconButton>
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                        '&:hover': {
+                            bgcolor: 'background.paper',
+                            transform: 'scale(1.1)',
+                        },
+                        transition: 'all 0.3s ease',
+                        zIndex: 1000,
+                    }}
+                >
+                    <Badge badgeContent={unreadCount} color="error">
+                        <NotificationsIcon />
+                    </Badge>
+                </IconButton>
+            )}
 
             <Menu
                 anchorEl={anchorEl}
