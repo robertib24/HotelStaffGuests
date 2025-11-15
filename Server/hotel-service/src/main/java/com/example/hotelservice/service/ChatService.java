@@ -44,11 +44,15 @@ public class ChatService {
     }
 
     public ChatResponseDTO processMessage(String message, String userEmail) throws IOException {
+        System.out.println("📥 Received message from: " + userEmail + " - Message: " + message);
+
         Guest guest = guestRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Guest not found"));
 
         String systemPrompt = buildSystemPrompt();
+        System.out.println("🤖 Calling Anthropic API...");
         String response = anthropicService.chat(message, systemPrompt);
+        System.out.println("✅ AI Response: " + response);
 
         ChatMessage chatMessage = ChatMessage.builder()
                 .guest(guest)
@@ -58,7 +62,9 @@ public class ChatService {
                 .build();
         chatMessageRepository.save(chatMessage);
 
-        return parseResponse(response, guest);
+        ChatResponseDTO result = parseResponse(response, guest);
+        System.out.println("📤 Sending response - Action: " + result.getAction());
+        return result;
     }
 
     private String buildSystemPrompt() {
