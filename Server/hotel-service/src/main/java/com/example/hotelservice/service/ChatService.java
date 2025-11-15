@@ -106,15 +106,31 @@ public class ChatService {
 
                 if ("room_service".equals(action)) {
                     String request = jsonResponse.get("request").asText();
-                    RoomServiceRequestDTO dto = RoomServiceRequestDTO.builder()
-                            .request(request)
-                            .build();
-                    var created = roomServiceRequestService.createRequest(dto, guest.getEmail());
-                    return ChatResponseDTO.builder()
-                            .response("Am înregistrat cererea ta pentru room service: " + request + ". Personalul nostru te va contacta în curând!")
-                            .action("room_service")
-                            .actionData(created)
-                            .build();
+
+                    Reservation activeReservation = reservationRepository.findAll().stream()
+                            .filter(r -> r.getGuest().getId().equals(guest.getId()))
+                            .filter(r -> !r.getStartDate().isAfter(LocalDate.now()))
+                            .filter(r -> !r.getEndDate().isBefore(LocalDate.now()))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (activeReservation != null) {
+                        RoomServiceRequestDTO dto = RoomServiceRequestDTO.builder()
+                                .request(request)
+                                .roomId(activeReservation.getRoom().getId())
+                                .build();
+                        var created = roomServiceRequestService.createRequest(dto, guest.getEmail());
+                        return ChatResponseDTO.builder()
+                                .response("Am înregistrat cererea ta pentru room service: " + request + ". Personalul nostru te va contacta în curând!")
+                                .action("room_service")
+                                .actionData(created)
+                                .build();
+                    } else {
+                        return ChatResponseDTO.builder()
+                                .response("Nu am găsit o rezervare activă pentru tine. Te rog să contactezi recepția pentru asistență.")
+                                .action("error")
+                                .build();
+                    }
                 }
 
                 if ("housekeeping".equals(action)) {
