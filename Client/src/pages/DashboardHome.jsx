@@ -9,6 +9,10 @@ import CleaningServicesIcon from '@mui/icons-material/CleaningServices';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import BuildIcon from '@mui/icons-material/Build';
+import RoomServiceIcon from '@mui/icons-material/RoomService';
+import RestaurantIcon from '@mui/icons-material/Restaurant';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PendingIcon from '@mui/icons-material/Pending';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -77,15 +81,20 @@ function StatWidget({ title, value, icon, color, trend, onClick }) {
             onHoverStart={handleHover}
             onHoverEnd={handleHoverEnd}
             animate={controls}
+            style={{ height: '100%' }}
         >
-            <Card 
-                sx={{ 
+            <Card
+                sx={{
                     height: '100%',
+                    minHeight: 180,
                     background: `linear-gradient(135deg, ${color}18 0%, ${color}08 100%)`,
                     border: `1.5px solid ${color}40`,
+                    borderRadius: 3,
                     position: 'relative',
                     overflow: 'hidden',
                     cursor: onClick ? 'pointer' : 'default',
+                    display: 'flex',
+                    flexDirection: 'column',
                     '&::before': {
                         content: '""',
                         position: 'absolute',
@@ -113,7 +122,7 @@ function StatWidget({ title, value, icon, color, trend, onClick }) {
                 }}
                 onClick={onClick}
             >
-                <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
+                <CardContent sx={{ p: 3, position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                         <motion.div
                             whileHover={{ rotate: 360, scale: 1.2 }}
@@ -126,6 +135,8 @@ function StatWidget({ title, value, icon, color, trend, onClick }) {
                                     background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
                                     color: 'white',
                                     display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
                                     boxShadow: `0 12px 32px ${color}60`,
                                 }}
                             >
@@ -138,11 +149,11 @@ function StatWidget({ title, value, icon, color, trend, onClick }) {
                                 animate={{ opacity: 1, scale: 1, x: 0 }}
                                 transition={{ delay: 0.4, type: "spring" }}
                             >
-                                <Chip 
+                                <Chip
                                     icon={<TrendingUpIcon />}
                                     label={trend}
                                     size="small"
-                                    sx={{ 
+                                    sx={{
                                         background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                                         color: 'white',
                                         fontWeight: 'bold',
@@ -152,25 +163,28 @@ function StatWidget({ title, value, icon, color, trend, onClick }) {
                             </motion.div>
                         )}
                     </Box>
-                    <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mb: 1 }}>
-                        {title}
-                    </Typography>
-                    <motion.div
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.3, type: "spring", stiffness: 150 }}
-                    >
-                        <Typography variant="h3" sx={{ 
-                            fontWeight: 'bold', 
-                            color: color, 
-                            textShadow: `0 0 30px ${color}50`,
-                            background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>
-                            <AnimatedCounter value={value} />
+                    <Box>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, mb: 1.5, textAlign: 'center' }}>
+                            {title}
                         </Typography>
-                    </motion.div>
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ delay: 0.3, type: "spring", stiffness: 150 }}
+                        >
+                            <Typography variant="h3" sx={{
+                                fontWeight: 'bold',
+                                color: color,
+                                textAlign: 'center',
+                                textShadow: `0 0 30px ${color}50`,
+                                background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                <AnimatedCounter value={value} />
+                            </Typography>
+                        </motion.div>
+                    </Box>
                 </CardContent>
             </Card>
         </motion.div>
@@ -219,44 +233,63 @@ const WelcomeHeader = ({ name }) => (
 );
 
 const ManagerDashboard = ({ stats }) => (
-    <>
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={4}>
-                <StatWidget 
-                    title="Total Angajați" 
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <Grid container spacing={3} sx={{ mb: 4, maxWidth: '100%' }} justifyContent="center">
+            <Grid item xs={12} sm={6} md={4}>
+                <StatWidget
+                    title="Total Angajați"
                     value={stats.employeeCount}
-                    icon={<BadgeIcon sx={{ fontSize: 28 }} />}
+                    icon={<BadgeIcon sx={{ fontSize: 32 }} />}
                     color="#3b82f6"
                 />
             </Grid>
-            <Grid item xs={12} md={4}>
-                <StatWidget 
-                    title="Total Oaspeți" 
+            <Grid item xs={12} sm={6} md={4}>
+                <StatWidget
+                    title="Total Oaspeți"
                     value={stats.guestCount}
-                    icon={<PeopleIcon sx={{ fontSize: 28 }} />} 
+                    icon={<PeopleIcon sx={{ fontSize: 32 }} />}
                     color="#10b981"
                 />
             </Grid>
-            <Grid item xs={12} md={4}>
-                <StatWidget 
-                    title="Total Camere" 
+            <Grid item xs={12} sm={6} md={4}>
+                <StatWidget
+                    title="Total Camere"
                     value={stats.roomCount}
-                    icon={<KingBedIcon sx={{ fontSize: 28 }} />} 
+                    icon={<KingBedIcon sx={{ fontSize: 32 }} />}
                     color="#f59e0b"
                 />
             </Grid>
         </Grid>
-        
-        <Grid container spacing={3}>
+
+        <Grid container spacing={3} sx={{ maxWidth: '100%' }} justifyContent="center">
+            <Grid item xs={12} md={6}>
+                <StatWidget
+                    title="Camere Disponibile"
+                    value={stats.availableRooms}
+                    icon={<EventAvailableIcon sx={{ fontSize: 32 }} />}
+                    color="#10b981"
+                />
+            </Grid>
+            <Grid item xs={12} md={6}>
+                <StatWidget
+                    title="Camere Ocupate"
+                    value={stats.occupiedRooms}
+                    icon={<MeetingRoomIcon sx={{ fontSize: 32 }} />}
+                    color="#ef4444"
+                />
+            </Grid>
+        </Grid>
+
+        <Grid container spacing={3} sx={{ mt: 1, maxWidth: '100%' }} justifyContent="center">
             <Grid item xs={12}>
                 <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.7, delay: 0.5, type: "spring" }}
                 >
-                    <Paper 
-                        sx={{ 
-                            p: 4, 
+                    <Paper
+                        sx={{
+                            p: 4,
                             height: 500,
                             display: 'flex',
                             flexDirection: 'column',
@@ -264,6 +297,7 @@ const ManagerDashboard = ({ stats }) => (
                             border: '1.5px solid rgba(59, 130, 246, 0.25)',
                             position: 'relative',
                             overflow: 'hidden',
+                            borderRadius: 3,
                             '&::before': {
                                 content: '""',
                                 position: 'absolute',
@@ -281,7 +315,7 @@ const ManagerDashboard = ({ stats }) => (
                             }
                         }}
                     >
-                        <Box sx={{ mb: 3, flexShrink: 0 }}>
+                        <Box sx={{ mb: 3, flexShrink: 0, textAlign: 'center' }}>
                             <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                                 📊 Flux Oaspeți (Check-ins)
                             </Typography>
@@ -302,19 +336,19 @@ const ManagerDashboard = ({ stats }) => (
                                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} opacity={0.3} />
                                     <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af' }} axisLine={{ stroke: '#334155' }} />
                                     <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af' }} axisLine={{ stroke: '#334155' }} />
-                                    <Tooltip 
-                                        contentStyle={{ 
-                                            backgroundColor: 'rgba(30, 41, 59, 0.98)', 
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'rgba(30, 41, 59, 0.98)',
                                             border: '1px solid rgba(59, 130, 246, 0.3)',
                                             borderRadius: '12px',
                                             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
                                         }}
                                     />
-                                    <Area 
-                                        type="monotone" 
-                                        dataKey="Oaspeți" 
-                                        stroke="#3b82f6" 
-                                        fill="url(#colorGuests)" 
+                                    <Area
+                                        type="monotone"
+                                        dataKey="Oaspeți"
+                                        stroke="#3b82f6"
+                                        fill="url(#colorGuests)"
                                         strokeWidth={3}
                                         animationDuration={2000}
                                     />
@@ -325,115 +359,132 @@ const ManagerDashboard = ({ stats }) => (
                 </motion.div>
             </Grid>
         </Grid>
-    </>
+    </Box>
 );
 
 const ReceptionistDashboard = ({ stats }) => {
     const navigate = useNavigate();
     return (
-        <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-                <StatWidget 
-                    title="Camere Disponibile (Curate)" 
-                    value={stats.availableRooms}
-                    icon={<EventAvailableIcon sx={{ fontSize: 28 }} />}
-                    color="#10b981"
-                    onClick={() => navigate('/rooms')}
-                />
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <Grid container spacing={3} sx={{ maxWidth: '100%' }} justifyContent="center">
+                <Grid item xs={12} sm={6} md={6}>
+                    <StatWidget
+                        title="Camere Disponibile (Curate)"
+                        value={stats.availableRooms}
+                        icon={<EventAvailableIcon sx={{ fontSize: 32 }} />}
+                        color="#10b981"
+                        onClick={() => navigate('/rooms')}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={6}>
+                    <StatWidget
+                        title="Camere Ocupate"
+                        value={stats.occupiedRooms}
+                        icon={<MeetingRoomIcon sx={{ fontSize: 32 }} />}
+                        color="#ef4444"
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={6}>
+                    <StatWidget
+                        title="Necesită Curățenie"
+                        value={stats.needsCleaningRooms}
+                        icon={<CleaningServicesIcon sx={{ fontSize: 32 }} />}
+                        color="#f59e0b"
+                        onClick={() => navigate('/housekeeping')}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={6}>
+                    <StatWidget
+                        title="În Mentenanță"
+                        value={stats.inMaintenanceRooms}
+                        icon={<BuildIcon sx={{ fontSize: 32 }} />}
+                        color="#64748b"
+                    />
+                </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-                <StatWidget 
-                    title="Camere Ocupate" 
-                    value={stats.occupiedRooms}
-                    icon={<MeetingRoomIcon sx={{ fontSize: 28 }} />} 
-                    color="#ef4444"
-                />
-            </Grid>
-            <Grid item xs={12} md={6}>
-                <StatWidget 
-                    title="Necesită Curățenie" 
-                    value={stats.needsCleaningRooms}
-                    icon={<CleaningServicesIcon sx={{ fontSize: 28 }} />} 
-                    color="#f59e0b"
-                    onClick={() => navigate('/housekeeping')}
-                />
-            </Grid>
-            <Grid item xs={12} md={6}>
-                <StatWidget 
-                    title="În Mentenanță" 
-                    value={stats.inMaintenanceRooms}
-                    icon={<BuildIcon sx={{ fontSize: 28 }} />} 
-                    color="#64748b"
-                />
-            </Grid>
-        </Grid>
+        </Box>
     );
 };
 
 const CleanerDashboard = ({ stats }) => {
     const navigate = useNavigate();
+    const totalRooms = stats.availableRooms + stats.needsCleaningRooms + stats.occupiedRooms + stats.inMaintenanceRooms;
+    const completionPercentage = totalRooms > 0 ? Math.round((stats.availableRooms / totalRooms) * 100) : 0;
+
     return (
-        <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-                <StatWidget
-                    title="Camere ce Necesită Curățenie"
-                    value={stats.needsCleaningRooms}
-                    icon={<CleaningServicesIcon sx={{ fontSize: 32 }} />}
-                    color="#f59e0b"
-                    onClick={() => navigate('/housekeeping')}
-                />
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <Grid container spacing={3} sx={{ maxWidth: '100%' }} justifyContent="center">
+                <Grid item xs={12} sm={6} md={4}>
+                    <StatWidget
+                        title="Camere ce Necesită Curățenie"
+                        value={stats.needsCleaningRooms}
+                        icon={<CleaningServicesIcon sx={{ fontSize: 36 }} />}
+                        color="#f59e0b"
+                        onClick={() => navigate('/housekeeping')}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                    <StatWidget
+                        title="Camere Curate"
+                        value={stats.availableRooms}
+                        icon={<CheckCircleIcon sx={{ fontSize: 36 }} />}
+                        color="#10b981"
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                    <StatWidget
+                        title="Progres Curățenie"
+                        value={completionPercentage}
+                        icon={<EventAvailableIcon sx={{ fontSize: 36 }} />}
+                        color="#8b5cf6"
+                    />
+                </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-                <StatWidget
-                    title="Camere Curate"
-                    value={stats.availableRooms}
-                    icon={<EventAvailableIcon sx={{ fontSize: 32 }} />}
-                    color="#10b981"
-                />
-            </Grid>
-        </Grid>
+        </Box>
     );
 };
 
 const ChefDashboard = ({ stats }) => {
     const navigate = useNavigate();
     return (
-        <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={3}>
-                <StatWidget
-                    title="Cereri în Așteptare"
-                    value={stats.pendingRoomServiceRequests || 0}
-                    icon={<CleaningServicesIcon sx={{ fontSize: 28 }} />}
-                    color="#f59e0b"
-                    onClick={() => navigate('/room-service')}
-                />
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <Grid container spacing={3} sx={{ maxWidth: '100%' }} justifyContent="center">
+                <Grid item xs={12} sm={6} md={6} lg={3}>
+                    <StatWidget
+                        title="Cereri în Așteptare"
+                        value={stats.pendingRoomServiceRequests || 0}
+                        icon={<PendingIcon sx={{ fontSize: 32 }} />}
+                        color="#f59e0b"
+                        onClick={() => navigate('/room-service')}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={6} lg={3}>
+                    <StatWidget
+                        title="În Lucru"
+                        value={stats.inProgressRoomServiceRequests || 0}
+                        icon={<RestaurantIcon sx={{ fontSize: 32 }} />}
+                        color="#3b82f6"
+                        onClick={() => navigate('/room-service')}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={6} lg={3}>
+                    <StatWidget
+                        title="Finalizate Astăzi"
+                        value={stats.completedTodayRoomServiceRequests || 0}
+                        icon={<CheckCircleIcon sx={{ fontSize: 32 }} />}
+                        color="#10b981"
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={6} lg={3}>
+                    <StatWidget
+                        title="Total Cereri"
+                        value={stats.totalRoomServiceRequests || 0}
+                        icon={<RoomServiceIcon sx={{ fontSize: 32 }} />}
+                        color="#8b5cf6"
+                    />
+                </Grid>
             </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-                <StatWidget
-                    title="În Lucru"
-                    value={stats.inProgressRoomServiceRequests || 0}
-                    icon={<BuildIcon sx={{ fontSize: 28 }} />}
-                    color="#3b82f6"
-                    onClick={() => navigate('/room-service')}
-                />
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-                <StatWidget
-                    title="Finalizate Astăzi"
-                    value={stats.completedTodayRoomServiceRequests || 0}
-                    icon={<EventAvailableIcon sx={{ fontSize: 28 }} />}
-                    color="#10b981"
-                />
-            </Grid>
-            <Grid item xs={12} md={6} lg={3}>
-                <StatWidget
-                    title="Total Cereri"
-                    value={stats.totalRoomServiceRequests || 0}
-                    icon={<KingBedIcon sx={{ fontSize: 28 }} />}
-                    color="#8b5cf6"
-                />
-            </Grid>
-        </Grid>
+        </Box>
     );
 };
 
