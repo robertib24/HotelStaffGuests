@@ -15,9 +15,9 @@ struct MyReservationsView: View {
                     .ignoresSafeArea()
 
                 if isLoading {
-                    LoadingView()
+                    ReservationsLoadingView()
                 } else if let errorMessage = errorMessage {
-                    ErrorView(message: errorMessage) {
+                    ReservationsErrorView(message: errorMessage) {
                         Task { await loadReservations() }
                     }
                 } else if reservations.isEmpty {
@@ -429,7 +429,7 @@ struct EmptyReservationsView: View {
     }
 }
 
-struct LoadingView: View {
+private struct ReservationsLoadingView: View {
     @State private var isAnimating = false
 
     var body: some View {
@@ -462,7 +462,7 @@ struct LoadingView: View {
     }
 }
 
-struct ErrorView: View {
+private struct ReservationsErrorView: View {
     let message: String
     let retry: () -> Void
 
