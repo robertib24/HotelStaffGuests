@@ -188,7 +188,7 @@ struct RoomDetailView: View {
                             }
                             .padding()
                         } else if reviews.isEmpty {
-                            EmptyStateView(
+                            RoomDetailEmptyView(
                                 icon: "star",
                                 title: "Nicio recenzie",
                                 message: "Fii primul care lasă o recenzie!"
@@ -319,5 +319,74 @@ struct ReviewCard: View {
             return displayFormatter.string(from: date)
         }
         return dateString
+    }
+}
+
+private struct RoomDetailEmptyView: View {
+    let icon: String
+    let title: String
+    let message: String
+
+    var body: some View {
+        VStack(spacing: 20) {
+            ZStack {
+                Circle()
+                    .fill(Color("textSecondary").opacity(0.1))
+                    .frame(width: 100, height: 100)
+
+                Image(systemName: icon)
+                    .font(.system(size: 50))
+                    .foregroundColor(Color("textSecondary").opacity(0.6))
+            }
+
+            VStack(spacing: 8) {
+                Text(title)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color("textPrimary"))
+
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundColor(Color("textSecondary"))
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding()
+    }
+}
+
+private struct StatusBadge: View {
+    let status: String
+
+    var statusColor: Color {
+        switch status {
+        case "Curat": return Color("green")
+        case "Ocupat": return Color("red")
+        case "Necesită Curățenie": return Color("yellow")
+        case "În Mentenanță": return Color("blue")
+        default: return Color("textSecondary")
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(statusColor)
+                .frame(width: 8, height: 8)
+            Text(status)
+                .font(.caption)
+                .fontWeight(.semibold)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    Capsule()
+                        .stroke(statusColor.opacity(0.3), lineWidth: 1)
+                )
+        )
+        .foregroundColor(statusColor)
     }
 }
