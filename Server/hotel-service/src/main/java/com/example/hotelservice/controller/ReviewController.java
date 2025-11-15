@@ -50,4 +50,19 @@ public class ReviewController {
         reviewService.deleteReview(id, principal.getName());
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/staff/reviews/{id}/respond")
+    public ResponseEntity<ReviewDTO> respondToReview(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> request,
+            Principal principal) {
+        String response = request.get("response");
+        ReviewDTO review = reviewService.respondToReview(id, response, principal.getName());
+        return ResponseEntity.ok(review);
+    }
+
+    @GetMapping("/staff/reviews")
+    public ResponseEntity<List<ReviewDTO>> getAllReviews() {
+        return ResponseEntity.ok(reviewService.getAllReviews());
+    }
 }

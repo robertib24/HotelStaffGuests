@@ -375,8 +375,8 @@ const CleanerDashboard = ({ stats }) => {
     return (
         <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-                <StatWidget 
-                    title="Camere ce Necesită Curățenie" 
+                <StatWidget
+                    title="Camere ce Necesită Curățenie"
                     value={stats.needsCleaningRooms}
                     icon={<CleaningServicesIcon sx={{ fontSize: 32 }} />}
                     color="#f59e0b"
@@ -384,11 +384,53 @@ const CleanerDashboard = ({ stats }) => {
                 />
             </Grid>
             <Grid item xs={12} md={6}>
-                <StatWidget 
-                    title="Camere Curate" 
+                <StatWidget
+                    title="Camere Curate"
                     value={stats.availableRooms}
-                    icon={<EventAvailableIcon sx={{ fontSize: 32 }} />} 
+                    icon={<EventAvailableIcon sx={{ fontSize: 32 }} />}
                     color="#10b981"
+                />
+            </Grid>
+        </Grid>
+    );
+};
+
+const ChefDashboard = ({ stats }) => {
+    const navigate = useNavigate();
+    return (
+        <Grid container spacing={3}>
+            <Grid item xs={12} md={6} lg={3}>
+                <StatWidget
+                    title="Cereri în Așteptare"
+                    value={stats.pendingRoomServiceRequests || 0}
+                    icon={<CleaningServicesIcon sx={{ fontSize: 28 }} />}
+                    color="#f59e0b"
+                    onClick={() => navigate('/room-service')}
+                />
+            </Grid>
+            <Grid item xs={12} md={6} lg={3}>
+                <StatWidget
+                    title="În Lucru"
+                    value={stats.inProgressRoomServiceRequests || 0}
+                    icon={<BuildIcon sx={{ fontSize: 28 }} />}
+                    color="#3b82f6"
+                    onClick={() => navigate('/room-service')}
+                />
+            </Grid>
+            <Grid item xs={12} md={6} lg={3}>
+                <StatWidget
+                    title="Finalizate Astăzi"
+                    value={stats.completedTodayRoomServiceRequests || 0}
+                    icon={<EventAvailableIcon sx={{ fontSize: 28 }} />}
+                    color="#10b981"
+                />
+            </Grid>
+            <Grid item xs={12} md={6} lg={3}>
+                <StatWidget
+                    title="Total Cereri"
+                    value={stats.totalRoomServiceRequests || 0}
+                    icon={<KingBedIcon sx={{ fontSize: 28 }} />}
+                    color="#8b5cf6"
                 />
             </Grid>
         </Grid>
@@ -459,6 +501,8 @@ function DashboardHome() {
                 return <ReceptionistDashboard stats={stats} />;
             case 'ROLE_Cleaner':
                 return <CleanerDashboard stats={stats} />;
+            case 'ROLE_Chef':
+                return <ChefDashboard stats={stats} />;
             default:
                 return (
                     <Typography>

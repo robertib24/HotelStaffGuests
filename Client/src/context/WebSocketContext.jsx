@@ -40,17 +40,41 @@ export function WebSocketProvider({ children }) {
 
                 stompClient.subscribe('/topic/notifications', (message) => {
                     const notification = JSON.parse(message.body);
-                    
+
                     if (notification.type === 'NEW_GUEST_REGISTRATION') {
                         showToast(
                             `🎉 ${notification.guestName} s-a înregistrat din aplicația mobilă!`,
                             'info'
                         );
-                        
+
                         addNotification({
                             type: 'NEW_GUEST_REGISTRATION',
                             title: notification.title || 'Oaspete Nou',
                             message: notification.message || `${notification.guestName} s-a înregistrat`,
+                            severity: 'info'
+                        });
+                    } else if (notification.type === 'RESERVATION_CANCELLED') {
+                        showToast(
+                            `🚫 ${notification.message}`,
+                            'warning'
+                        );
+
+                        addNotification({
+                            type: 'RESERVATION_CANCELLED',
+                            title: notification.title || 'Rezervare Anulată',
+                            message: notification.message,
+                            severity: 'warning'
+                        });
+                    } else if (notification.type === 'NEW_REVIEW') {
+                        showToast(
+                            `⭐ ${notification.message}`,
+                            'info'
+                        );
+
+                        addNotification({
+                            type: 'NEW_REVIEW',
+                            title: notification.title || 'Recenzie Nouă',
+                            message: notification.message,
                             severity: 'info'
                         });
                     }

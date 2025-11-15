@@ -40,8 +40,16 @@ public class Review {
     @Column(nullable = false, length = 1000)
     private String comment;
 
+    @Column(length = 1000)
+    private String staffResponse;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    private LocalDateTime respondedAt;
+
+    @Column(length = 100)
+    private String respondedBy; // Staff member name who responded
 
     @PrePersist
     protected void onCreate() {

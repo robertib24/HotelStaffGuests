@@ -130,6 +130,7 @@ export function NotificationProvider({ children }) {
             info: 'ℹ️',
             NEW_GUEST_REGISTRATION: '🎉',
             RESERVATION_CANCELLED: '🚫',
+            NEW_REVIEW: '⭐',
             HOUSEKEEPING_REQUEST: '🧹',
             ROOM_SERVICE_REQUEST: '🍽️',
             reservation: '📅',

@@ -169,7 +169,17 @@ function RoomList() {
 
     const columns = useMemo(() => {
         const baseColumns = [
-            { field: 'id', headerName: 'ID', width: 80, headerAlign: 'center', align: 'center' },
+            {
+                field: 'index',
+                headerName: '#',
+                width: 70,
+                headerAlign: 'center',
+                align: 'center',
+                valueGetter: (params) => {
+                    return filteredRooms.findIndex(room => room.id === params.row.id) + 1;
+                },
+                sortable: false
+            },
             { 
                 field: 'number', 
                 headerName: 'Număr Cameră', 

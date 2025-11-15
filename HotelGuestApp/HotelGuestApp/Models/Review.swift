@@ -6,4 +6,7 @@ struct Review: Codable, Identifiable, Hashable {
     let rating: Int
     let comment: String
     let createdAt: String
+    let staffResponse: String?
+    let respondedAt: String?
+    let respondedBy: String?
 }
