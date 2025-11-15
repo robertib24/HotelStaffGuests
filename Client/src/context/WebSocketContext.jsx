@@ -77,6 +77,30 @@ export function WebSocketProvider({ children }) {
                             message: notification.message,
                             severity: 'info'
                         });
+                    } else if (notification.type === 'HOUSEKEEPING_REQUEST') {
+                        showToast(
+                            `🧹 ${notification.message}`,
+                            'info'
+                        );
+
+                        addNotification({
+                            type: 'HOUSEKEEPING_REQUEST',
+                            title: notification.title || 'Cerere Curățenie',
+                            message: notification.message,
+                            severity: 'info'
+                        });
+                    } else if (notification.type === 'ROOM_SERVICE_REQUEST') {
+                        showToast(
+                            `🍽️ ${notification.message}`,
+                            'info'
+                        );
+
+                        addNotification({
+                            type: 'ROOM_SERVICE_REQUEST',
+                            title: notification.title || 'Cerere Room Service',
+                            message: notification.message,
+                            severity: 'info'
+                        });
                     }
                 });
             },
