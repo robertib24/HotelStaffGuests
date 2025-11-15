@@ -1,0 +1,148 @@
+@startuml Room Service Request - Sequence Diagram
+
+title Request Room Service - Sequence Diagram
+
+' Participants
+actor "Guest\n(iOS App)" as Guest
+participant "iOS App" as iOS
+participant "Spring Boot\nBackend" as Backend
+database "PostgreSQL\nDatabase" as DB
+participant "Email\nService" as Email
+participant "WebSocket\nServer" as WS
+participant "React\nManagement App" as React
+actor "Chef" as Chef
+
+' === Phase 1: Guest Creates Room Service Request ===
+autonumber
+Guest -> iOS: Tap "Room Service"\nSelect items & submit
+activate iOS
+
+iOS -> Backend: POST /api/client/room-service-requests\n{items, specialRequests}
+activate Backend
+
+Backend -> Backend: Authenticate JWT token\nGet guest from token
+Backend -> DB: INSERT INTO room_service_request\n(guest_id, items, status=PENDING)
+activate DB
+DB --> Backend: Request saved (ID: 123)
+deactivate DB
+
+' === Phase 2: Send Notifications ===
+Backend -> Email: sendRoomServiceConfirmation(request)\n@Async
+activate Email
+Email -> Email: Build email template
+Email -> Guest: Send email:\n"Comanda ta #123 a fost primită"
+deactivate Email
+
+Backend -> WS: Send notification to\n/topic/notifications\n{type: ROOM_SERVICE_REQUEST}
+activate WS
+
+Backend --> iOS: 201 Created\n{id: 123, status: PENDING}
+deactivate Backend
+
+iOS --> Guest: Show success message:\n"Comanda ta a fost trimisă"
+deactivate iOS
+
+' === Phase 3: WebSocket Notification to Management App ===
+WS -> React: WebSocket message:\n{type: ROOM_SERVICE_REQUEST,\nmessage: "Cerere nouă..."}
+deactivate WS
+activate React
+
+React -> React: Display toast notification\nAdd to notification bell
+React -> Chef: 🍽️ Show notification:\n"Cerere nouă de room service"
+deactivate React
+
+' === Phase 4: Chef Processes Order ===
+Chef -> React: Click on notification\nNavigate to /room-service
+activate React
+
+React -> Backend: GET /api/staff/room-service-requests
+activate Backend
+Backend -> DB: SELECT * FROM room_service_request\nWHERE status='PENDING'
+activate DB
+DB --> Backend: List of pending requests
+deactivate DB
+Backend --> React: 200 OK\n[{id: 123, items, status}]
+deactivate Backend
+
+React --> Chef: Display request #123
+deactivate React
+
+Chef -> React: Click "Start Processing"\nChange status to IN_PROGRESS
+activate React
+
+React -> Backend: PATCH /api/staff/room-service-requests/123/status\n{status: IN_PROGRESS}
+activate Backend
+
+Backend -> DB: UPDATE room_service_request\nSET status='IN_PROGRESS'\nWHERE id=123
+activate DB
+DB --> Backend: Updated
+deactivate DB
+
+Backend -> Email: sendRoomServiceStatusUpdate(request)\n@Async
+activate Email
+Email -> Guest: Send email:\n"Comanda #123 este în preparare"
+deactivate Email
+
+Backend --> React: 200 OK\n{id: 123, status: IN_PROGRESS}
+deactivate Backend
+
+React --> Chef: Show success:\n"Status actualizat"
+deactivate React
+
+' === Phase 5: Chef Completes Order ===
+Chef -> React: Click "Mark Complete"
+activate React
+
+React -> Backend: PATCH /api/staff/room-service-requests/123/status\n{status: COMPLETED}
+activate Backend
+
+Backend -> DB: UPDATE room_service_request\nSET status='COMPLETED'\nWHERE id=123
+activate DB
+DB --> Backend: Updated
+deactivate DB
+
+Backend -> Email: sendRoomServiceStatusUpdate(request)\n@Async
+activate Email
+Email -> Guest: Send email:\n"Comanda #123 a fost livrată"
+deactivate Email
+
+Backend --> React: 200 OK\n{id: 123, status: COMPLETED}
+deactivate Backend
+
+React --> Chef: Show success:\n"Comandă finalizată"
+deactivate React
+
+' === Phase 6: Guest Views Status (Optional) ===
+Guest -> iOS: Open "My Requests"
+activate iOS
+
+iOS -> Backend: GET /api/client/room-service-requests
+activate Backend
+Backend -> DB: SELECT * FROM room_service_request\nWHERE guest_id=456
+activate DB
+DB --> Backend: Guest's requests
+deactivate DB
+Backend --> iOS: 200 OK\n[{id: 123, status: COMPLETED}]
+deactivate Backend
+
+iOS --> Guest: Display: "Comandă livrată ✅"
+deactivate iOS
+
+' Notes
+note over Backend, Email
+  Email service runs asynchronously
+  using @Async annotation
+end note
+
+note over WS, React
+  WebSocket provides real-time
+  notifications to all connected
+  management app users
+end note
+
+note over Backend
+  All endpoints are secured
+  with JWT authentication
+end note
+
+@enduml

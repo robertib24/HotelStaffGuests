@@ -1,0 +1,163 @@
+@startuml Hotel Management System - Use Case Diagram
+
+' Actors
+actor "Guest\n(iOS App)" as Guest
+actor Admin as Admin
+actor Manager as Manager
+actor Receptionist as Receptionist
+actor Chef as Chef
+actor "Cleaner" as Cleaner
+
+' System boundary
+rectangle "Hotel Management System" {
+
+    ' Guest use cases (iOS App)
+    package "Guest Features" {
+        usecase "Register Account" as UC1
+        usecase "Login" as UC2
+        usecase "View Available Rooms" as UC3
+        usecase "Make Reservation" as UC4
+        usecase "View My Reservations" as UC5
+        usecase "Cancel Reservation" as UC6
+        usecase "Request Room Service" as UC7
+        usecase "Request Housekeeping" as UC8
+        usecase "Leave Review" as UC9
+        usecase "View Staff Response" as UC10
+        usecase "Update Profile" as UC11
+        usecase "Manage Settings" as UC12
+    }
+
+    ' Admin use cases
+    package "Admin Features" {
+        usecase "Manage Employees" as UC13
+        usecase "View Reports" as UC14
+        usecase "Delete Guests" as UC15
+    }
+
+    ' Manager use cases
+    package "Manager Features" {
+        usecase "View Dashboard" as UC16
+        usecase "Manage Rooms" as UC17
+        usecase "View All Reservations" as UC18
+        usecase "Respond to Reviews" as UC19
+        usecase "View Guests" as UC20
+    }
+
+    ' Receptionist use cases
+    package "Receptionist Features" {
+        usecase "View Room Status" as UC21
+        usecase "Update Room Status" as UC22
+    }
+
+    ' Chef use cases
+    package "Chef Features" {
+        usecase "View Service Dashboard" as UC23
+        usecase "Manage Room Service" as UC24
+    }
+
+    ' Cleaner use cases
+    package "Cleaner Features" {
+        usecase "View Cleaning Dashboard" as UC25
+        usecase "Manage Housekeeping" as UC26
+    }
+
+    ' System use cases
+    package "System Features" {
+        usecase "Send Email Notification" as UC27
+        usecase "Send WebSocket Notification" as UC28
+        usecase "Generate Reservation Code" as UC29
+    }
+}
+
+' Guest relationships
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+Guest --> UC6
+Guest --> UC7
+Guest --> UC8
+Guest --> UC9
+Guest --> UC10
+Guest --> UC11
+Guest --> UC12
+
+' Admin relationships (includes Manager features)
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+Admin --> UC19
+Admin --> UC20
+Admin --> UC24
+Admin --> UC26
+
+' Manager relationships
+Manager --> UC16
+Manager --> UC17
+Manager --> UC18
+Manager --> UC19
+Manager --> UC20
+Manager --> UC24
+Manager --> UC26
+
+' Receptionist relationships
+Receptionist --> UC16
+Receptionist --> UC20
+Receptionist --> UC21
+Receptionist --> UC22
+
+' Chef relationships
+Chef --> UC16
+Chef --> UC23
+Chef --> UC24
+
+' Cleaner relationships
+Cleaner --> UC16
+Cleaner --> UC25
+Cleaner --> UC26
+Cleaner --> UC22
+
+' Include relationships
+UC4 ..> UC29 : <<include>>
+UC4 ..> UC27 : <<include>>
+UC6 ..> UC27 : <<include>>
+UC6 ..> UC28 : <<include>>
+UC7 ..> UC27 : <<include>>
+UC7 ..> UC28 : <<include>>
+UC8 ..> UC28 : <<include>>
+UC9 ..> UC28 : <<include>>
+UC19 ..> UC27 : <<include>>
+UC24 ..> UC27 : <<include>>
+UC26 ..> UC27 : <<include>>
+
+' Extend relationships
+UC10 ..> UC9 : <<extend>>
+
+' Generalization
+Manager --|> Receptionist
+Admin --|> Manager
+
+' Notes
+note right of UC27
+  Sent for:
+  - Reservation confirmation
+  - Reservation cancellation
+  - Room service status
+  - Housekeeping status
+  - Review response
+end note
+
+note right of UC28
+  Real-time notifications for:
+  - New guest registration
+  - Reservation cancelled
+  - New review
+  - Room service request
+  - Housekeeping request
+end note
+
+@enduml
