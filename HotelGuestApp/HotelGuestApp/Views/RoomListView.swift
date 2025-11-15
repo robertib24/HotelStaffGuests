@@ -41,9 +41,9 @@ struct RoomListView: View {
                     .ignoresSafeArea()
 
                 if isLoading {
-                    LoadingView()
+                    RoomListLoadingView()
                 } else if let errorMessage = errorMessage {
-                    ErrorView(message: errorMessage) {
+                    RoomListErrorView(message: errorMessage) {
                         Task { await loadRooms() }
                     }
                 } else {
@@ -57,7 +57,7 @@ struct RoomListView: View {
                             FilterScrollView(selectedFilter: $selectedFilter)
 
                             if filteredRooms.isEmpty {
-                                EmptyStateView(
+                                RoomListEmptyView(
                                     icon: "bed.double",
                                     title: "Nicio cameră găsită",
                                     message: "Încearcă să modifici filtrele sau căutarea"
@@ -432,7 +432,7 @@ struct FeatureTag: View {
     }
 }
 
-struct LoadingView: View {
+private struct RoomListLoadingView: View {
     @State private var isAnimating = false
 
     var body: some View {
@@ -465,7 +465,7 @@ struct LoadingView: View {
     }
 }
 
-struct ErrorView: View {
+private struct RoomListErrorView: View {
     let message: String
     let retry: () -> Void
 
@@ -524,7 +524,7 @@ struct ErrorView: View {
     }
 }
 
-struct EmptyStateView: View {
+private struct RoomListEmptyView: View {
     let icon: String
     let title: String
     let message: String
