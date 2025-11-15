@@ -6,7 +6,7 @@ title Request Room Service - Sequence Diagram
 actor "Guest\n(iOS App)" as Guest
 participant "iOS App" as iOS
 participant "Spring Boot\nBackend" as Backend
-database "MySQL\nDatabase" as DB
+database "PostgreSQL\nDatabase" as DB
 participant "Email\nService" as Email
 participant "WebSocket\nServer" as WS
 participant "React\nManagement App" as React

@@ -89,10 +89,11 @@ plantuml sequence-diagram-room-service.puml
 - State management
 - NavigationStack
 
-### Database (MySQL)
+### Database (PostgreSQL)
 - Relații între entități
 - Status management
 - Transaction handling
+- ACID compliance
 
 ## Legendă
 
