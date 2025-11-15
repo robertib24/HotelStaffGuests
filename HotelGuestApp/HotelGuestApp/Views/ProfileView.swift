@@ -366,42 +366,87 @@ struct SuccessBanner: View {
 
 struct SettingsSection: View {
     @Binding var showLogoutAlert: Bool
-    
+
     var body: some View {
         VStack(spacing: 12) {
-            SettingRow(
-                icon: "bell.fill",
-                title: "Notificări",
-                color: Color("yellow"),
-                action: {}
-            )
-            
-            SettingRow(
-                icon: "lock.fill",
-                title: "Confidențialitate",
-                color: Color("purple"),
-                action: {}
-            )
-            
-            SettingRow(
-                icon: "questionmark.circle.fill",
-                title: "Ajutor & Suport",
-                color: Color("blue"),
-                action: {}
-            )
-            
+            NavigationLink(destination: NotificationsSettingsView()) {
+                HStack(spacing: 12) {
+                    Image(systemName: "bell.fill")
+                        .font(.title3)
+                        .foregroundColor(Color("yellow"))
+                        .frame(width: 32)
+
+                    Text("Notificări")
+                        .font(.body)
+                        .foregroundColor(Color("textPrimary"))
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color("textSecondary"))
+                }
+                .padding()
+                .background(Color("background"))
+                .cornerRadius(12)
+            }
+
+            NavigationLink(destination: PrivacySettingsView()) {
+                HStack(spacing: 12) {
+                    Image(systemName: "lock.fill")
+                        .font(.title3)
+                        .foregroundColor(Color("purple"))
+                        .frame(width: 32)
+
+                    Text("Confidențialitate")
+                        .font(.body)
+                        .foregroundColor(Color("textPrimary"))
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color("textSecondary"))
+                }
+                .padding()
+                .background(Color("background"))
+                .cornerRadius(12)
+            }
+
+            NavigationLink(destination: HelpSupportView()) {
+                HStack(spacing: 12) {
+                    Image(systemName: "questionmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(Color("blue"))
+                        .frame(width: 32)
+
+                    Text("Ajutor & Suport")
+                        .font(.body)
+                        .foregroundColor(Color("textPrimary"))
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(Color("textSecondary"))
+                }
+                .padding()
+                .background(Color("background"))
+                .cornerRadius(12)
+            }
+
             Button(action: { showLogoutAlert = true }) {
                 HStack(spacing: 12) {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
                         .font(.title3)
                         .foregroundColor(Color("red"))
                         .frame(width: 32)
-                    
+
                     Text("Deconectare")
                         .font(.body)
                         .fontWeight(.semibold)
                         .foregroundColor(Color("red"))
-                    
+
                     Spacer()
                 }
                 .padding()
