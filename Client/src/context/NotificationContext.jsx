@@ -4,8 +4,6 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
 
 const NotificationContext = createContext();
 
@@ -28,49 +26,6 @@ export function NotificationProvider({ children }) {
     useEffect(() => {
         localStorage.setItem('hotel_notifications', JSON.stringify(notifications));
     }, [notifications]);
-
-    useEffect(() => {
-        const client = new Client({
-            webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
-            reconnectDelay: 5000,
-            heartbeatIncoming: 4000,
-            heartbeatOutgoing: 4000,
-        });
-
-        client.onConnect = () => {
-            console.log('✅ WebSocket Connected');
-
-            client.subscribe('/topic/notifications', (message) => {
-                const notification = JSON.parse(message.body);
-                console.log('📨 Received WebSocket notification:', notification);
-
-                const newNotification = {
-                    id: Date.now() + Math.random(),
-                    timestamp: new Date().toISOString(),
-                    read: false,
-                    type: notification.type,
-                    title: notification.title,
-                    message: notification.message,
-                    data: notification.data
-                };
-
-                setNotifications(prev => [newNotification, ...prev]);
-            });
-        };
-
-        client.onStompError = (frame) => {
-            console.error('❌ WebSocket error:', frame.headers['message']);
-        };
-
-        client.activate();
-
-        return () => {
-            if (client.active) {
-                client.deactivate();
-                console.log('🔌 WebSocket Disconnected');
-            }
-        };
-    }, []);
 
     const addNotification = useCallback((notification) => {
         const newNotification = {
