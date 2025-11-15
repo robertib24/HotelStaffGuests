@@ -256,7 +256,6 @@ struct FilterChip: View {
 
 struct RoomCard: View {
     let room: Room
-    @State private var isPressed = false
 
     var roomTypeIcon: String {
         switch room.type {
@@ -363,14 +362,7 @@ struct RoomCard: View {
         .background(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color("formBackground"))
-                .shadow(color: Color.black.opacity(isPressed ? 0.1 : 0.15), radius: isPressed ? 6 : 12, x: 0, y: isPressed ? 2 : 6)
-        )
-        .scaleEffect(isPressed ? 0.97 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
+                .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 6)
         )
     }
 }
