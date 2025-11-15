@@ -6,23 +6,22 @@ import {
     Paper,
     Box,
     Chip,
-    CircularProgress,
     Alert,
     ToggleButton,
     ToggleButtonGroup,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     Typography,
     Button,
-    IconButton
+    Card,
+    CardContent,
+    Grid,
+    Avatar,
+    Divider,
+    Stack
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import RoomServiceIcon from '@mui/icons-material/RoomService';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PersonIcon from '@mui/icons-material/Person';
+import HotelIcon from '@mui/icons-material/Hotel';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { TableSkeleton } from '../components/LoadingSkeletons';
 
@@ -83,21 +82,47 @@ function RoomServiceList() {
         }
     };
 
+    const getStatusIcon = (status) => {
+        switch(status) {
+            case 'PENDING': return '⏳';
+            case 'IN_PROGRESS': return '🔄';
+            case 'COMPLETED': return '✅';
+            default: return '📋';
+        }
+    };
+
     if (loading) return <TableSkeleton />;
     if (error) return <Alert severity="error">{error}</Alert>;
 
     return (
         <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h4" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <RoomServiceIcon fontSize="large" color="primary" />
-                    Cereri Room Service
-                </Typography>
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 4,
+                flexWrap: 'wrap',
+                gap: 2
+            }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56 }}>
+                        <RoomServiceIcon fontSize="large" />
+                    </Avatar>
+                    <Box>
+                        <Typography variant="h4" fontWeight="bold">
+                            Room Service
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {requests.length} {requests.length === 1 ? 'cerere' : 'cereri'} {statusFilter !== 'ALL' ? statusFilter.toLowerCase() : 'totale'}
+                        </Typography>
+                    </Box>
+                </Box>
                 <ToggleButtonGroup
                     value={statusFilter}
                     exclusive
                     onChange={(e, value) => value && setStatusFilter(value)}
                     size="small"
+                    sx={{ bgcolor: 'background.paper', boxShadow: 1 }}
                 >
                     <ToggleButton value="ALL">Toate</ToggleButton>
                     <ToggleButton value="PENDING">Pending</ToggleButton>
@@ -106,75 +131,150 @@ function RoomServiceList() {
                 </ToggleButtonGroup>
             </Box>
 
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>ID</TableCell>
-                            <TableCell>Oaspete</TableCell>
-                            <TableCell>Cameră</TableCell>
-                            <TableCell>Cerere</TableCell>
-                            <TableCell>Data</TableCell>
-                            <TableCell>Status</TableCell>
-                            <TableCell>Acțiuni</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {requests.map((request) => (
-                            <motion.tr
-                                key={request.id}
-                                component={TableRow}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                            >
-                                <TableCell>{request.id}</TableCell>
-                                <TableCell>{request.guest?.name || 'N/A'}</TableCell>
-                                <TableCell>{request.room?.number || 'N/A'}</TableCell>
-                                <TableCell>{request.request}</TableCell>
-                                <TableCell>{new Date(request.createdAt).toLocaleString('ro-RO')}</TableCell>
-                                <TableCell>
-                                    <Chip
-                                        label={request.status}
-                                        color={getStatusColor(request.status)}
-                                        size="small"
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        {request.status === 'PENDING' && (
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleStatusChange(request.id, 'IN_PROGRESS')}
-                                            >
-                                                Începe
-                                            </Button>
-                                        )}
-                                        {request.status === 'IN_PROGRESS' && (
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="success"
-                                                onClick={() => handleStatusChange(request.id, 'COMPLETED')}
-                                            >
-                                                Completează
-                                            </Button>
-                                        )}
-                                    </Box>
-                                </TableCell>
-                            </motion.tr>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-
-            {requests.length === 0 && (
-                <Paper sx={{ p: 4, textAlign: 'center', mt: 2 }}>
-                    <RoomServiceIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary">
+            {requests.length === 0 ? (
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 8,
+                        textAlign: 'center',
+                        borderRadius: 3,
+                        border: '2px dashed',
+                        borderColor: 'divider',
+                        bgcolor: 'background.default'
+                    }}
+                >
+                    <RoomServiceIcon sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
                         Nu există cereri de room service
                     </Typography>
+                    <Typography variant="body2" color="text.disabled">
+                        Cererile vor apărea aici când clienții le vor trimite din aplicația iOS
+                    </Typography>
                 </Paper>
+            ) : (
+                <Grid container spacing={3}>
+                    {requests.map((request, index) => (
+                        <Grid item xs={12} md={6} lg={4} key={request.id}>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                            >
+                                <Card
+                                    elevation={2}
+                                    sx={{
+                                        height: '100%',
+                                        borderRadius: 3,
+                                        transition: 'all 0.3s',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        '&:hover': {
+                                            transform: 'translateY(-4px)',
+                                            boxShadow: 6,
+                                            borderColor: 'primary.main'
+                                        }
+                                    }}
+                                >
+                                    <CardContent>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+                                            <Chip
+                                                label={`#${request.id}`}
+                                                size="small"
+                                                sx={{ fontWeight: 'bold' }}
+                                            />
+                                            <Chip
+                                                icon={<span>{getStatusIcon(request.status)}</span>}
+                                                label={request.status}
+                                                color={getStatusColor(request.status)}
+                                                size="small"
+                                            />
+                                        </Box>
+
+                                        <Typography
+                                            variant="h6"
+                                            gutterBottom
+                                            sx={{
+                                                fontWeight: 600,
+                                                minHeight: 64,
+                                                display: '-webkit-box',
+                                                overflow: 'hidden',
+                                                WebkitBoxOrient: 'vertical',
+                                                WebkitLineClamp: 2
+                                            }}
+                                        >
+                                            {request.request}
+                                        </Typography>
+
+                                        <Divider sx={{ my: 2 }} />
+
+                                        <Stack spacing={1.5}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <PersonIcon fontSize="small" color="action" />
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {request.guest?.name || 'N/A'}
+                                                </Typography>
+                                            </Box>
+
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <HotelIcon fontSize="small" color="action" />
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Camera {request.room?.number || 'N/A'}
+                                                </Typography>
+                                            </Box>
+
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <AccessTimeIcon fontSize="small" color="action" />
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {new Date(request.createdAt).toLocaleString('ro-RO', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </Typography>
+                                            </Box>
+                                        </Stack>
+
+                                        <Box sx={{ mt: 3, display: 'flex', gap: 1 }}>
+                                            {request.status === 'PENDING' && (
+                                                <Button
+                                                    fullWidth
+                                                    variant="outlined"
+                                                    onClick={() => handleStatusChange(request.id, 'IN_PROGRESS')}
+                                                    sx={{ borderRadius: 2 }}
+                                                >
+                                                    Începe
+                                                </Button>
+                                            )}
+                                            {request.status === 'IN_PROGRESS' && (
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    color="success"
+                                                    onClick={() => handleStatusChange(request.id, 'COMPLETED')}
+                                                    sx={{ borderRadius: 2 }}
+                                                >
+                                                    Completează
+                                                </Button>
+                                            )}
+                                            {request.status === 'COMPLETED' && (
+                                                <Button
+                                                    fullWidth
+                                                    variant="outlined"
+                                                    disabled
+                                                    sx={{ borderRadius: 2 }}
+                                                >
+                                                    Finalizat
+                                                </Button>
+                                            )}
+                                        </Box>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </Grid>
+                    ))}
+                </Grid>
             )}
         </Box>
     );
