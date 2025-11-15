@@ -23,7 +23,7 @@ const menuItems = [
     { text: 'Oaspeți', icon: <PeopleIcon />, path: '/guests', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Receptionist'] },
     { text: 'Camere', icon: <KingBedIcon />, path: '/rooms', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Receptionist', 'ROLE_Cleaner'] },
     { text: 'Curățenie', icon: <CleaningServicesIcon />, path: '/housekeeping', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Cleaner'] },
-    { text: 'Room Service', icon: <RoomServiceIcon />, path: '/room-service', roles: ['ROLE_Admin', 'ROLE_Manager'] },
+    { text: 'Room Service', icon: <RoomServiceIcon />, path: '/room-service', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Chef'] },
     { text: 'Cereri Curățenie', icon: <BuildIcon />, path: '/housekeeping-requests', roles: ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Cleaner'] },
     { text: 'Rapoarte', icon: <AssessmentIcon />, path: '/reports', roles: ['ROLE_Admin'] },
 ];

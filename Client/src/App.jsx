@@ -17,6 +17,7 @@ import './App.css';
 function App() {
   const adminRoles = ['ROLE_Admin'];
   const managerRoles = ['ROLE_Admin', 'ROLE_Manager'];
+  const roomServiceRoles = ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Chef'];
   const housekeepingRoles = ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Cleaner'];
 
   return (
@@ -33,7 +34,7 @@ function App() {
             <Route path="reports" element={<EarningsReport />} />
           </Route>
 
-          <Route element={<RoleBasedRoute allowedRoles={managerRoles} />}>
+          <Route element={<RoleBasedRoute allowedRoles={roomServiceRoles} />}>
             <Route path="room-service" element={<RoomServiceList />} />
           </Route>
 
