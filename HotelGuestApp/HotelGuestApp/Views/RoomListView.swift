@@ -31,7 +31,12 @@ struct RoomListView: View {
             }
         }
 
-        return result
+        return result.sorted { (room1, room2) -> Bool in
+            // Extract numeric part from room number (e.g., "101" -> 101)
+            let num1 = Int(room1.number.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+            let num2 = Int(room2.number.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+            return num1 < num2
+        }
     }
 
     var body: some View {
@@ -88,7 +93,7 @@ struct RoomListView: View {
                 await loadRooms()
             }
             .refreshable {
-                await loadRooms()
+                await reloadRooms()
             }
         }
     }
@@ -150,6 +155,19 @@ struct RoomListView: View {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    func reloadRooms() async {
+        errorMessage = nil
+
+        do {
+            let loadedRooms = try await apiService.fetchPublicRooms()
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                self.rooms = loadedRooms
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 }
 
