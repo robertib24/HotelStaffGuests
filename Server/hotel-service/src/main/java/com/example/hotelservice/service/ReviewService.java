@@ -9,10 +9,12 @@ import com.example.hotelservice.exception.ResourceNotFoundException;
 import com.example.hotelservice.repository.GuestRepository;
 import com.example.hotelservice.repository.ReviewRepository;
 import com.example.hotelservice.repository.RoomRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +27,18 @@ public class ReviewService {
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
     private final EmailService emailService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public ReviewService(ReviewRepository reviewRepository,
                          GuestRepository guestRepository,
                          RoomRepository roomRepository,
-                         EmailService emailService) {
+                         EmailService emailService,
+                         SimpMessagingTemplate messagingTemplate) {
         this.reviewRepository = reviewRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
         this.emailService = emailService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Transactional
@@ -52,6 +57,20 @@ public class ReviewService {
                 .build();
 
         Review savedReview = reviewRepository.save(review);
+
+        // Send WebSocket notification for new review
+        Map<String, Object> notification = new HashMap<>();
+        notification.put("type", "NEW_REVIEW");
+        notification.put("title", "Recenzie Nouă");
+        notification.put("message", guest.getName() + " a lăsat o recenzie de " + request.getRating() + " stele pentru camera " + room.getNumber());
+        notification.put("guestName", guest.getName());
+        notification.put("roomNumber", room.getNumber());
+        notification.put("rating", request.getRating());
+        notification.put("reviewId", savedReview.getId());
+        notification.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+
+        messagingTemplate.convertAndSend("/topic/notifications", notification);
+
         return new ReviewDTO(savedReview);
     }
 

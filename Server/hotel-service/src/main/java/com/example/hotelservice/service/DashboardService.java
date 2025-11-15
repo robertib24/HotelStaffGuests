@@ -5,9 +5,12 @@ import com.example.hotelservice.repository.EmployeeRepository;
 import com.example.hotelservice.repository.GuestRepository;
 import com.example.hotelservice.repository.ReservationRepository;
 import com.example.hotelservice.repository.RoomRepository;
+import com.example.hotelservice.repository.RoomServiceRequestRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,15 +25,18 @@ public class DashboardService {
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
     private final ReservationRepository reservationRepository;
+    private final RoomServiceRequestRepository roomServiceRequestRepository;
 
     public DashboardService(EmployeeRepository employeeRepository,
                             GuestRepository guestRepository,
                             RoomRepository roomRepository,
-                            ReservationRepository reservationRepository) {
+                            ReservationRepository reservationRepository,
+                            RoomServiceRequestRepository roomServiceRequestRepository) {
         this.employeeRepository = employeeRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
         this.reservationRepository = reservationRepository;
+        this.roomServiceRequestRepository = roomServiceRequestRepository;
     }
 
     public DashboardStatsDTO getDashboardStats() {
@@ -46,6 +52,15 @@ public class DashboardService {
                         row -> (Long) row[1]
                 ));
 
+        // Chef dashboard statistics
+        long pendingRoomService = roomServiceRequestRepository.countByStatus("PENDING");
+        long inProgressRoomService = roomServiceRequestRepository.countByStatus("IN_PROGRESS");
+        long totalRoomService = roomServiceRequestRepository.count();
+
+        // Get completed requests from today (since midnight)
+        LocalDateTime startOfToday = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
+        long completedTodayRoomService = roomServiceRequestRepository.countByStatusAndCreatedAtAfter("COMPLETED", startOfToday);
+
         return DashboardStatsDTO.builder()
                 .employeeCount(employeeCount)
                 .guestCount(guestCount)
@@ -55,6 +70,10 @@ public class DashboardService {
                 .occupiedRooms(roomStatusCounts.getOrDefault("Ocupat", 0L))
                 .needsCleaningRooms(roomStatusCounts.getOrDefault("Necesită Curățenie", 0L))
                 .inMaintenanceRooms(roomStatusCounts.getOrDefault("În Mentenanță", 0L))
+                .pendingRoomServiceRequests(pendingRoomService)
+                .inProgressRoomServiceRequests(inProgressRoomService)
+                .completedTodayRoomServiceRequests(completedTodayRoomService)
+                .totalRoomServiceRequests(totalRoomService)
                 .build();
     }
 

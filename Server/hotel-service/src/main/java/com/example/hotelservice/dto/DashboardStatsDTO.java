@@ -22,4 +22,10 @@ public class DashboardStatsDTO {
     private long occupiedRooms;
     private long needsCleaningRooms;
     private long inMaintenanceRooms;
+
+    // Chef dashboard statistics
+    private long pendingRoomServiceRequests;
+    private long inProgressRoomServiceRequests;
+    private long completedTodayRoomServiceRequests;
+    private long totalRoomServiceRequests;
 }
