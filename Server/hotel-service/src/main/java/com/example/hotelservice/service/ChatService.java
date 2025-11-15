@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ChatService {
@@ -84,10 +86,22 @@ public class ChatService {
                 "Fii prietenos, profesionist și eficient!";
     }
 
+    private String extractJsonFromMarkdown(String response) {
+        Pattern pattern = Pattern.compile("```json\\s*\\n(.+?)\\n```", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(response);
+        if (matcher.find()) {
+            String extracted = matcher.group(1).trim();
+            System.out.println("🔍 Extracted JSON from markdown: " + extracted);
+            return extracted;
+        }
+        return response;
+    }
+
     private ChatResponseDTO parseResponse(String response, Guest guest) {
         try {
             if (response.contains("\"action\":")) {
-                JsonNode jsonResponse = objectMapper.readTree(response);
+                String jsonString = extractJsonFromMarkdown(response);
+                JsonNode jsonResponse = objectMapper.readTree(jsonString);
                 String action = jsonResponse.get("action").asText();
 
                 if ("room_service".equals(action)) {
