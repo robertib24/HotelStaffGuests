@@ -27,7 +27,6 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import BuildIcon from '@mui/icons-material/Build';
 import HandymanIcon from '@mui/icons-material/Handyman';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { TableSkeleton } from '../components/LoadingSkeletons';
@@ -82,28 +81,19 @@ function HousekeepingRequestsList() {
 
     const getStatusColor = (status) => {
         switch(status) {
-            case 'PENDING': return 'warning';
-            case 'IN_PROGRESS': return 'info';
-            case 'COMPLETED': return 'success';
-            default: return 'default';
+            case 'PENDING': return '#fbbf24';
+            case 'IN_PROGRESS': return '#60a5fa';
+            case 'COMPLETED': return '#34d399';
+            default: return '#9ca3af';
         }
     };
 
     const getPriorityColor = (priority) => {
         switch(priority) {
-            case 'HIGH': return '#ef4444';
-            case 'NORMAL': return '#3b82f6';
+            case 'HIGH': return '#f87171';
+            case 'NORMAL': return '#60a5fa';
             case 'LOW': return '#94a3b8';
             default: return '#94a3b8';
-        }
-    };
-
-    const getStatusGradient = (status) => {
-        switch(status) {
-            case 'PENDING': return 'linear-gradient(135deg, #FFA726 0%, #FB8C00 100%)';
-            case 'IN_PROGRESS': return 'linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)';
-            case 'COMPLETED': return 'linear-gradient(135deg, #66BB6A 0%, #43A047 100%)';
-            default: return 'linear-gradient(135deg, #BDBDBD 0%, #9E9E9E 100%)';
         }
     };
 
@@ -121,15 +111,15 @@ function HousekeepingRequestsList() {
             case 'CLEANING': return <CleaningServicesIcon />;
             case 'MAINTENANCE': return <HandymanIcon />;
             case 'SUPPLIES': return <InventoryIcon />;
-            default: return <BuildIcon />;
+            default: return <CleaningServicesIcon />;
         }
     };
 
     const getTypeColor = (type) => {
         switch(type) {
-            case 'CLEANING': return '#10b981';
-            case 'MAINTENANCE': return '#f59e0b';
-            case 'SUPPLIES': return '#8b5cf6';
+            case 'CLEANING': return '#34d399';
+            case 'MAINTENANCE': return '#fbbf24';
+            case 'SUPPLIES': return '#a78bfa';
             default: return '#6b7280';
         }
     };
@@ -145,83 +135,111 @@ function HousekeepingRequestsList() {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-        >
-            <Box sx={{ mb: 4 }}>
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
-                        <Avatar
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+            p: 4
+        }}>
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
+                    <Box
+                        sx={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 0 40px rgba(16, 185, 129, 0.5), 0 0 80px rgba(5, 150, 105, 0.3)',
+                            position: 'relative',
+                            '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                inset: -2,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, #10b981, #059669)',
+                                filter: 'blur(20px)',
+                                opacity: 0.5,
+                                zIndex: -1
+                            }
+                        }}
+                    >
+                        <CleaningServicesIcon sx={{ fontSize: 45, color: 'white' }} />
+                    </Box>
+                    <Box>
+                        <Typography
+                            variant="h3"
+                            fontWeight="900"
                             sx={{
-                                bgcolor: 'transparent',
                                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                width: 70,
-                                height: 70,
-                                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)'
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                textShadow: '0 0 30px rgba(16, 185, 129, 0.3)',
+                                letterSpacing: '-0.02em'
                             }}
                         >
-                            <CleaningServicesIcon sx={{ fontSize: 40 }} />
-                        </Avatar>
-                        <Box>
-                            <Typography
-                                variant="h3"
-                                fontWeight="800"
-                                sx={{
-                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                    backgroundClip: 'text',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
-                                }}
-                            >
-                                Housekeeping
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary" fontWeight="500">
-                                Cereri de curățenie și întreținere
-                            </Typography>
-                        </Box>
+                            Housekeeping
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
+                            Cereri de curățenie și întreținere
+                        </Typography>
                     </Box>
-                </motion.div>
+                </Box>
 
-                <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid container spacing={2} sx={{ mb: 4 }}>
                     {[
                         { label: 'Total', value: stats.total, color: '#10b981', icon: '📊' },
-                        { label: 'Pending', value: stats.pending, color: '#FB8C00', icon: '⏳' },
-                        { label: 'În Progres', value: stats.inProgress, color: '#1E88E5', icon: '🔄' },
-                        { label: 'Completate', value: stats.completed, color: '#059669', icon: '✅' }
+                        { label: 'Pending', value: stats.pending, color: '#fbbf24', icon: '⏳' },
+                        { label: 'În Progres', value: stats.inProgress, color: '#60a5fa', icon: '🔄' },
+                        { label: 'Completate', value: stats.completed, color: '#34d399', icon: '✅' }
                     ].map((stat, index) => (
                         <Grid item xs={6} md={3} key={stat.label}>
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1, type: "spring" }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
                             >
                                 <Paper
                                     elevation={0}
                                     sx={{
-                                        p: 2.5,
+                                        p: 3,
                                         borderRadius: 3,
-                                        background: `linear-gradient(135deg, ${stat.color}15 0%, ${stat.color}08 100%)`,
-                                        border: `2px solid ${stat.color}30`,
+                                        background: 'rgba(255, 255, 255, 0.03)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: `1px solid ${stat.color}30`,
                                         transition: 'all 0.3s',
+                                        position: 'relative',
+                                        overflow: 'hidden',
                                         '&:hover': {
                                             transform: 'translateY(-4px)',
-                                            boxShadow: `0 12px 28px ${stat.color}25`
+                                            boxShadow: `0 0 30px ${stat.color}40`,
+                                            border: `1px solid ${stat.color}60`
+                                        },
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            height: '2px',
+                                            background: stat.color,
+                                            boxShadow: `0 0 10px ${stat.color}`
                                         }
                                     }}
                                 >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                         <Typography variant="h4">{stat.icon}</Typography>
                                         <Box>
-                                            <Typography variant="h4" fontWeight="bold" color={stat.color}>
+                                            <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
                                                 {stat.value}
                                             </Typography>
-                                            <Typography variant="caption" color="text.secondary" fontWeight="600">
+                                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
                                                 {stat.label}
                                             </Typography>
                                         </Box>
@@ -232,20 +250,27 @@ function HousekeepingRequestsList() {
                     ))}
                 </Grid>
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 4 }}>
                     <ToggleButtonGroup
                         value={statusFilter}
                         exclusive
                         onChange={(e, value) => value && setStatusFilter(value)}
                         size="small"
                         sx={{
-                            bgcolor: 'background.paper',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            backdropFilter: 'blur(10px)',
                             borderRadius: 2,
+                            border: '1px solid rgba(16, 185, 129, 0.2)',
                             '& .MuiToggleButton-root': {
                                 border: 'none',
-                                borderRadius: 2,
-                                fontWeight: 600
+                                color: 'rgba(255,255,255,0.6)',
+                                fontWeight: 600,
+                                px: 2.5,
+                                '&.Mui-selected': {
+                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                    color: 'white',
+                                    boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+                                }
                             }
                         }}
                     >
@@ -255,7 +280,7 @@ function HousekeepingRequestsList() {
                         <ToggleButton value="COMPLETED">Completate</ToggleButton>
                     </ToggleButtonGroup>
                 </Box>
-            </Box>
+            </motion.div>
 
             {requests.length === 0 ? (
                 <Fade in={true} timeout={800}>
@@ -265,9 +290,9 @@ function HousekeepingRequestsList() {
                             p: 10,
                             textAlign: 'center',
                             borderRadius: 4,
-                            border: '3px dashed',
-                            borderColor: 'divider',
-                            bgcolor: 'rgba(16, 185, 129, 0.02)'
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            backdropFilter: 'blur(10px)',
+                            border: '2px dashed rgba(16, 185, 129, 0.3)'
                         }}
                     >
                         <motion.div
@@ -281,12 +306,12 @@ function HousekeepingRequestsList() {
                                 repeatType: "reverse"
                             }}
                         >
-                            <CleaningServicesIcon sx={{ fontSize: 100, color: 'text.disabled', mb: 3 }} />
+                            <CleaningServicesIcon sx={{ fontSize: 100, color: 'rgba(16, 185, 129, 0.4)', mb: 3 }} />
                         </motion.div>
-                        <Typography variant="h5" color="text.secondary" gutterBottom fontWeight="600">
+                        <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1, fontWeight: 600 }}>
                             Nu există cereri de housekeeping
                         </Typography>
-                        <Typography variant="body1" color="text.disabled">
+                        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.4)' }}>
                             Cererile vor apărea aici când clienții le vor trimite din aplicația iOS
                         </Typography>
                     </Paper>
@@ -297,14 +322,10 @@ function HousekeepingRequestsList() {
                         {requests.map((request, index) => (
                             <Grid item xs={12} md={6} lg={4} key={request.id}>
                                 <motion.div
-                                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{
-                                        delay: index * 0.08,
-                                        type: "spring",
-                                        stiffness: 100
-                                    }}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ delay: index * 0.05, type: "spring", stiffness: 100 }}
                                     whileHover={{ y: -8 }}
                                 >
                                     <Card
@@ -312,19 +333,23 @@ function HousekeepingRequestsList() {
                                         sx={{
                                             height: '100%',
                                             borderRadius: 4,
-                                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            border: '2px solid',
-                                            borderColor: request.priority === 'HIGH' ? '#ef4444' : 'divider',
                                             background: request.priority === 'HIGH'
-                                                ? 'linear-gradient(135deg, #fff5f5 0%, #ffffff 100%)'
-                                                : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                                                ? 'rgba(248, 113, 113, 0.05)'
+                                                : 'rgba(255, 255, 255, 0.05)',
+                                            backdropFilter: 'blur(20px)',
+                                            border: request.priority === 'HIGH'
+                                                ? '1px solid rgba(248, 113, 113, 0.3)'
+                                                : '1px solid rgba(16, 185, 129, 0.2)',
+                                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                                             position: 'relative',
                                             overflow: 'hidden',
                                             '&:hover': {
                                                 boxShadow: request.priority === 'HIGH'
-                                                    ? '0 20px 40px rgba(239, 68, 68, 0.2)'
-                                                    : '0 20px 40px rgba(16, 185, 129, 0.15)',
-                                                borderColor: request.priority === 'HIGH' ? '#ef4444' : '#10b981',
+                                                    ? '0 0 40px rgba(248, 113, 113, 0.3)'
+                                                    : '0 0 40px rgba(16, 185, 129, 0.3)',
+                                                border: request.priority === 'HIGH'
+                                                    ? '1px solid rgba(248, 113, 113, 0.5)'
+                                                    : '1px solid rgba(16, 185, 129, 0.5)',
                                                 '&::before': {
                                                     width: '100%'
                                                 }
@@ -335,8 +360,9 @@ function HousekeepingRequestsList() {
                                                 top: 0,
                                                 left: 0,
                                                 width: '0%',
-                                                height: '4px',
-                                                background: getStatusGradient(request.status),
+                                                height: '3px',
+                                                background: `linear-gradient(90deg, ${getStatusColor(request.status)}, ${getStatusColor(request.status)}80)`,
+                                                boxShadow: `0 0 15px ${getStatusColor(request.status)}`,
                                                 transition: 'width 0.4s ease'
                                             }
                                         }}
@@ -349,9 +375,9 @@ function HousekeepingRequestsList() {
                                                         size="small"
                                                         sx={{
                                                             fontWeight: 'bold',
-                                                            fontSize: '0.85rem',
                                                             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                                            color: 'white'
+                                                            color: 'white',
+                                                            boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
                                                         }}
                                                     />
                                                     <Chip
@@ -362,7 +388,8 @@ function HousekeepingRequestsList() {
                                                             fontWeight: 'bold',
                                                             background: `${getPriorityColor(request.priority)}20`,
                                                             color: getPriorityColor(request.priority),
-                                                            border: `1.5px solid ${getPriorityColor(request.priority)}`,
+                                                            border: `1px solid ${getPriorityColor(request.priority)}40`,
+                                                            boxShadow: `0 0 15px ${getPriorityColor(request.priority)}20`,
                                                             ...(request.priority === 'HIGH' && {
                                                                 animation: 'pulse 2s infinite'
                                                             })
@@ -372,9 +399,14 @@ function HousekeepingRequestsList() {
                                                 <Chip
                                                     icon={<span style={{ fontSize: '1rem' }}>{getStatusIcon(request.status)}</span>}
                                                     label={request.status}
-                                                    color={getStatusColor(request.status)}
                                                     size="small"
-                                                    sx={{ fontWeight: 'bold' }}
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        background: `${getStatusColor(request.status)}20`,
+                                                        color: getStatusColor(request.status),
+                                                        border: `1px solid ${getStatusColor(request.status)}40`,
+                                                        boxShadow: `0 0 15px ${getStatusColor(request.status)}20`
+                                                    }}
                                                 />
                                             </Box>
 
@@ -383,17 +415,18 @@ function HousekeepingRequestsList() {
                                                     sx={{
                                                         width: 48,
                                                         height: 48,
-                                                        bgcolor: `${getTypeColor(request.requestType)}20`,
+                                                        background: `${getTypeColor(request.requestType)}20`,
+                                                        border: `1px solid ${getTypeColor(request.requestType)}40`,
                                                         color: getTypeColor(request.requestType)
                                                     }}
                                                 >
                                                     {getTypeIcon(request.requestType)}
                                                 </Avatar>
                                                 <Box>
-                                                    <Typography variant="h6" fontWeight={700} color="#2d3748">
+                                                    <Typography variant="h6" fontWeight={700} sx={{ color: 'rgba(255,255,255,0.95)' }}>
                                                         {request.requestType}
                                                     </Typography>
-                                                    <Typography variant="caption" color="text.secondary" fontWeight="500">
+                                                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>
                                                         Tip cerere
                                                     </Typography>
                                                 </Box>
@@ -401,7 +434,6 @@ function HousekeepingRequestsList() {
 
                                             <Typography
                                                 variant="body2"
-                                                color="text.secondary"
                                                 sx={{
                                                     minHeight: 44,
                                                     mb: 2.5,
@@ -409,38 +441,54 @@ function HousekeepingRequestsList() {
                                                     overflow: 'hidden',
                                                     WebkitBoxOrient: 'vertical',
                                                     WebkitLineClamp: 2,
-                                                    fontWeight: 500
+                                                    fontWeight: 500,
+                                                    color: 'rgba(255,255,255,0.7)'
                                                 }}
                                             >
                                                 {request.description || 'Fără descriere suplimentară'}
                                             </Typography>
 
-                                            <Divider sx={{ my: 2.5, borderColor: 'rgba(16, 185, 129, 0.1)' }} />
+                                            <Divider sx={{ my: 2.5, borderColor: 'rgba(16, 185, 129, 0.2)' }} />
 
                                             <Stack spacing={2}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: '#10b98120' }}>
+                                                    <Avatar sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        background: 'linear-gradient(135deg, #10b98140, #05966940)',
+                                                        border: '1px solid rgba(16, 185, 129, 0.3)'
+                                                    }}>
                                                         <PersonIcon fontSize="small" sx={{ color: '#10b981' }} />
                                                     </Avatar>
-                                                    <Typography variant="body2" color="text.secondary" fontWeight="500">
+                                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                                                         {request.guest?.name || 'N/A'}
                                                     </Typography>
                                                 </Box>
 
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: '#05966920' }}>
+                                                    <Avatar sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        background: 'linear-gradient(135deg, #05966940, #10b98140)',
+                                                        border: '1px solid rgba(5, 150, 105, 0.3)'
+                                                    }}>
                                                         <HotelIcon fontSize="small" sx={{ color: '#059669' }} />
                                                     </Avatar>
-                                                    <Typography variant="body2" color="text.secondary" fontWeight="500">
+                                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                                                         Camera {request.room?.number || 'N/A'}
                                                     </Typography>
                                                 </Box>
 
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: '#48bb7820' }}>
-                                                        <AccessTimeIcon fontSize="small" sx={{ color: '#48bb78' }} />
+                                                    <Avatar sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        background: 'rgba(52, 211, 153, 0.2)',
+                                                        border: '1px solid rgba(52, 211, 153, 0.3)'
+                                                    }}>
+                                                        <AccessTimeIcon fontSize="small" sx={{ color: '#34d399' }} />
                                                     </Avatar>
-                                                    <Typography variant="body2" color="text.secondary" fontWeight="500">
+                                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                                                         {new Date(request.createdAt).toLocaleString('ro-RO', {
                                                             day: '2-digit',
                                                             month: 'short',
@@ -459,17 +507,18 @@ function HousekeepingRequestsList() {
                                                         onClick={() => handleStatusChange(request.id, 'IN_PROGRESS')}
                                                         startIcon={<PlayArrowIcon />}
                                                         sx={{
-                                                            borderRadius: 3,
-                                                            py: 1.2,
+                                                            borderRadius: 2.5,
+                                                            py: 1.3,
                                                             fontWeight: 'bold',
                                                             borderWidth: 2,
                                                             borderColor: '#10b981',
                                                             color: '#10b981',
+                                                            background: 'rgba(16, 185, 129, 0.1)',
                                                             '&:hover': {
                                                                 borderWidth: 2,
-                                                                borderColor: '#059669',
-                                                                bgcolor: '#10b98110',
-                                                                transform: 'scale(1.02)'
+                                                                borderColor: '#10b981',
+                                                                background: 'rgba(16, 185, 129, 0.2)',
+                                                                boxShadow: '0 0 25px rgba(16, 185, 129, 0.4)'
                                                             }
                                                         }}
                                                     >
@@ -483,15 +532,14 @@ function HousekeepingRequestsList() {
                                                         onClick={() => handleStatusChange(request.id, 'COMPLETED')}
                                                         startIcon={<CheckCircleOutlineIcon />}
                                                         sx={{
-                                                            borderRadius: 3,
-                                                            py: 1.2,
+                                                            borderRadius: 2.5,
+                                                            py: 1.3,
                                                             fontWeight: 'bold',
                                                             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                                            boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
+                                                            boxShadow: '0 0 30px rgba(16, 185, 129, 0.4)',
                                                             '&:hover': {
                                                                 background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                                                                boxShadow: '0 6px 20px rgba(16, 185, 129, 0.5)',
-                                                                transform: 'scale(1.02)'
+                                                                boxShadow: '0 0 40px rgba(16, 185, 129, 0.6)'
                                                             }
                                                         }}
                                                     >
@@ -504,11 +552,11 @@ function HousekeepingRequestsList() {
                                                         label="Curățenie Finalizată"
                                                         sx={{
                                                             width: '100%',
-                                                            py: 1.5,
+                                                            py: 1.8,
                                                             fontWeight: 'bold',
-                                                            fontSize: '0.9rem',
                                                             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                                            color: 'white'
+                                                            color: 'white',
+                                                            boxShadow: '0 0 25px rgba(16, 185, 129, 0.3)'
                                                         }}
                                                     />
                                                 )}
@@ -529,12 +577,12 @@ function HousekeepingRequestsList() {
                             opacity: 1;
                         }
                         50% {
-                            opacity: 0.7;
+                            opacity: 0.6;
                         }
                     }
                 `}
             </style>
-        </motion.div>
+        </Box>
     );
 }
 

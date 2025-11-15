@@ -17,9 +17,7 @@ import {
     Avatar,
     Divider,
     Stack,
-    Fade,
-    Zoom,
-    LinearProgress
+    Fade
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import RoomServiceIcon from '@mui/icons-material/RoomService';
@@ -80,19 +78,10 @@ function RoomServiceList() {
 
     const getStatusColor = (status) => {
         switch(status) {
-            case 'PENDING': return 'warning';
-            case 'IN_PROGRESS': return 'info';
-            case 'COMPLETED': return 'success';
-            default: return 'default';
-        }
-    };
-
-    const getStatusGradient = (status) => {
-        switch(status) {
-            case 'PENDING': return 'linear-gradient(135deg, #FFA726 0%, #FB8C00 100%)';
-            case 'IN_PROGRESS': return 'linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)';
-            case 'COMPLETED': return 'linear-gradient(135deg, #66BB6A 0%, #43A047 100%)';
-            default: return 'linear-gradient(135deg, #BDBDBD 0%, #9E9E9E 100%)';
+            case 'PENDING': return '#fbbf24';
+            case 'IN_PROGRESS': return '#60a5fa';
+            case 'COMPLETED': return '#34d399';
+            default: return '#9ca3af';
         }
     };
 
@@ -116,83 +105,111 @@ function RoomServiceList() {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-        >
-            <Box sx={{ mb: 4 }}>
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, type: "spring", stiffness: 100 }}
-                >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 2 }}>
-                        <Avatar
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+            p: 4
+        }}>
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4 }}>
+                    <Box
+                        sx={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 0 40px rgba(102, 126, 234, 0.5), 0 0 80px rgba(118, 75, 162, 0.3)',
+                            position: 'relative',
+                            '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                inset: -2,
+                                borderRadius: 3,
+                                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                filter: 'blur(20px)',
+                                opacity: 0.5,
+                                zIndex: -1
+                            }
+                        }}
+                    >
+                        <RoomServiceIcon sx={{ fontSize: 45, color: 'white' }} />
+                    </Box>
+                    <Box>
+                        <Typography
+                            variant="h3"
+                            fontWeight="900"
                             sx={{
-                                bgcolor: 'transparent',
                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                width: 70,
-                                height: 70,
-                                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)'
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                textShadow: '0 0 30px rgba(102, 126, 234, 0.3)',
+                                letterSpacing: '-0.02em'
                             }}
                         >
-                            <RoomServiceIcon sx={{ fontSize: 40 }} />
-                        </Avatar>
-                        <Box>
-                            <Typography
-                                variant="h3"
-                                fontWeight="800"
-                                sx={{
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    backgroundClip: 'text',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
-                                }}
-                            >
-                                Room Service
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary" fontWeight="500">
-                                Gestionare comenzi și solicitări
-                            </Typography>
-                        </Box>
+                            Room Service
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
+                            Gestionare comenzi și solicitări
+                        </Typography>
                     </Box>
-                </motion.div>
+                </Box>
 
-                <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid container spacing={2} sx={{ mb: 4 }}>
                     {[
                         { label: 'Total', value: stats.total, color: '#667eea', icon: '📊' },
-                        { label: 'Pending', value: stats.pending, color: '#FB8C00', icon: '⏳' },
-                        { label: 'În Progres', value: stats.inProgress, color: '#1E88E5', icon: '🔄' },
-                        { label: 'Completate', value: stats.completed, color: '#43A047', icon: '✅' }
+                        { label: 'Pending', value: stats.pending, color: '#fbbf24', icon: '⏳' },
+                        { label: 'În Progres', value: stats.inProgress, color: '#60a5fa', icon: '🔄' },
+                        { label: 'Completate', value: stats.completed, color: '#34d399', icon: '✅' }
                     ].map((stat, index) => (
                         <Grid item xs={6} md={3} key={stat.label}>
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.1, type: "spring" }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
                             >
                                 <Paper
                                     elevation={0}
                                     sx={{
-                                        p: 2.5,
+                                        p: 3,
                                         borderRadius: 3,
-                                        background: `linear-gradient(135deg, ${stat.color}15 0%, ${stat.color}08 100%)`,
-                                        border: `2px solid ${stat.color}30`,
+                                        background: 'rgba(255, 255, 255, 0.03)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: `1px solid ${stat.color}30`,
                                         transition: 'all 0.3s',
+                                        position: 'relative',
+                                        overflow: 'hidden',
                                         '&:hover': {
                                             transform: 'translateY(-4px)',
-                                            boxShadow: `0 12px 28px ${stat.color}25`
+                                            boxShadow: `0 0 30px ${stat.color}40`,
+                                            border: `1px solid ${stat.color}60`
+                                        },
+                                        '&::before': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            right: 0,
+                                            height: '2px',
+                                            background: stat.color,
+                                            boxShadow: `0 0 10px ${stat.color}`
                                         }
                                     }}
                                 >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                         <Typography variant="h4">{stat.icon}</Typography>
                                         <Box>
-                                            <Typography variant="h4" fontWeight="bold" color={stat.color}>
+                                            <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
                                                 {stat.value}
                                             </Typography>
-                                            <Typography variant="caption" color="text.secondary" fontWeight="600">
+                                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
                                                 {stat.label}
                                             </Typography>
                                         </Box>
@@ -203,20 +220,27 @@ function RoomServiceList() {
                     ))}
                 </Grid>
 
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 4 }}>
                     <ToggleButtonGroup
                         value={statusFilter}
                         exclusive
                         onChange={(e, value) => value && setStatusFilter(value)}
                         size="small"
                         sx={{
-                            bgcolor: 'background.paper',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            backdropFilter: 'blur(10px)',
                             borderRadius: 2,
+                            border: '1px solid rgba(102, 126, 234, 0.2)',
                             '& .MuiToggleButton-root': {
                                 border: 'none',
-                                borderRadius: 2,
-                                fontWeight: 600
+                                color: 'rgba(255,255,255,0.6)',
+                                fontWeight: 600,
+                                px: 2.5,
+                                '&.Mui-selected': {
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    boxShadow: '0 0 20px rgba(102, 126, 234, 0.4)'
+                                }
                             }
                         }}
                     >
@@ -226,7 +250,7 @@ function RoomServiceList() {
                         <ToggleButton value="COMPLETED">Completate</ToggleButton>
                     </ToggleButtonGroup>
                 </Box>
-            </Box>
+            </motion.div>
 
             {requests.length === 0 ? (
                 <Fade in={true} timeout={800}>
@@ -236,9 +260,9 @@ function RoomServiceList() {
                             p: 10,
                             textAlign: 'center',
                             borderRadius: 4,
-                            border: '3px dashed',
-                            borderColor: 'divider',
-                            bgcolor: 'rgba(102, 126, 234, 0.02)'
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            backdropFilter: 'blur(10px)',
+                            border: '2px dashed rgba(102, 126, 234, 0.3)'
                         }}
                     >
                         <motion.div
@@ -252,12 +276,12 @@ function RoomServiceList() {
                                 repeatType: "reverse"
                             }}
                         >
-                            <RoomServiceIcon sx={{ fontSize: 100, color: 'text.disabled', mb: 3 }} />
+                            <RoomServiceIcon sx={{ fontSize: 100, color: 'rgba(102, 126, 234, 0.4)', mb: 3 }} />
                         </motion.div>
-                        <Typography variant="h5" color="text.secondary" gutterBottom fontWeight="600">
+                        <Typography variant="h5" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1, fontWeight: 600 }}>
                             Nu există cereri de room service
                         </Typography>
-                        <Typography variant="body1" color="text.disabled">
+                        <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.4)' }}>
                             Cererile vor apărea aici când clienții le vor trimite din aplicația iOS
                         </Typography>
                     </Paper>
@@ -268,14 +292,10 @@ function RoomServiceList() {
                         {requests.map((request, index) => (
                             <Grid item xs={12} md={6} lg={4} key={request.id}>
                                 <motion.div
-                                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{
-                                        delay: index * 0.08,
-                                        type: "spring",
-                                        stiffness: 100
-                                    }}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ delay: index * 0.05, type: "spring", stiffness: 100 }}
                                     whileHover={{ y: -8 }}
                                 >
                                     <Card
@@ -283,15 +303,15 @@ function RoomServiceList() {
                                         sx={{
                                             height: '100%',
                                             borderRadius: 4,
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                            backdropFilter: 'blur(20px)',
+                                            border: '1px solid rgba(102, 126, 234, 0.2)',
                                             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            border: '2px solid',
-                                            borderColor: 'divider',
-                                            background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
                                             position: 'relative',
                                             overflow: 'hidden',
                                             '&:hover': {
-                                                boxShadow: '0 20px 40px rgba(102, 126, 234, 0.15)',
-                                                borderColor: 'primary.main',
+                                                boxShadow: '0 0 40px rgba(102, 126, 234, 0.3)',
+                                                border: '1px solid rgba(102, 126, 234, 0.5)',
                                                 '&::before': {
                                                     width: '100%'
                                                 }
@@ -302,8 +322,9 @@ function RoomServiceList() {
                                                 top: 0,
                                                 left: 0,
                                                 width: '0%',
-                                                height: '4px',
-                                                background: getStatusGradient(request.status),
+                                                height: '3px',
+                                                background: `linear-gradient(90deg, ${getStatusColor(request.status)}, ${getStatusColor(request.status)}80)`,
+                                                boxShadow: `0 0 15px ${getStatusColor(request.status)}`,
                                                 transition: 'width 0.4s ease'
                                             }
                                         }}
@@ -315,23 +336,27 @@ function RoomServiceList() {
                                                     size="small"
                                                     sx={{
                                                         fontWeight: 'bold',
-                                                        fontSize: '0.85rem',
                                                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                        color: 'white'
+                                                        color: 'white',
+                                                        boxShadow: '0 0 20px rgba(102, 126, 234, 0.4)'
                                                     }}
                                                 />
                                                 <Chip
                                                     icon={<span style={{ fontSize: '1rem' }}>{getStatusIcon(request.status)}</span>}
                                                     label={request.status}
-                                                    color={getStatusColor(request.status)}
                                                     size="small"
-                                                    sx={{ fontWeight: 'bold' }}
+                                                    sx={{
+                                                        fontWeight: 'bold',
+                                                        background: `${getStatusColor(request.status)}20`,
+                                                        color: getStatusColor(request.status),
+                                                        border: `1px solid ${getStatusColor(request.status)}40`,
+                                                        boxShadow: `0 0 15px ${getStatusColor(request.status)}20`
+                                                    }}
                                                 />
                                             </Box>
 
                                             <Typography
                                                 variant="h6"
-                                                gutterBottom
                                                 sx={{
                                                     fontWeight: 700,
                                                     minHeight: 64,
@@ -339,39 +364,54 @@ function RoomServiceList() {
                                                     overflow: 'hidden',
                                                     WebkitBoxOrient: 'vertical',
                                                     WebkitLineClamp: 2,
-                                                    mb: 2,
-                                                    color: '#2d3748'
+                                                    mb: 2.5,
+                                                    color: 'rgba(255,255,255,0.95)'
                                                 }}
                                             >
                                                 {request.request}
                                             </Typography>
 
-                                            <Divider sx={{ my: 2.5, borderColor: 'rgba(102, 126, 234, 0.1)' }} />
+                                            <Divider sx={{ my: 2.5, borderColor: 'rgba(102, 126, 234, 0.2)' }} />
 
                                             <Stack spacing={2}>
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: '#667eea20' }}>
+                                                    <Avatar sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        background: 'linear-gradient(135deg, #667eea40, #764ba240)',
+                                                        border: '1px solid rgba(102, 126, 234, 0.3)'
+                                                    }}>
                                                         <PersonIcon fontSize="small" sx={{ color: '#667eea' }} />
                                                     </Avatar>
-                                                    <Typography variant="body2" color="text.secondary" fontWeight="500">
+                                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                                                         {request.guest?.name || 'N/A'}
                                                     </Typography>
                                                 </Box>
 
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: '#764ba220' }}>
+                                                    <Avatar sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        background: 'linear-gradient(135deg, #764ba240, #667eea40)',
+                                                        border: '1px solid rgba(118, 75, 162, 0.3)'
+                                                    }}>
                                                         <HotelIcon fontSize="small" sx={{ color: '#764ba2' }} />
                                                     </Avatar>
-                                                    <Typography variant="body2" color="text.secondary" fontWeight="500">
+                                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                                                         Camera {request.room?.number || 'N/A'}
                                                     </Typography>
                                                 </Box>
 
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: '#48bb7820' }}>
-                                                        <AccessTimeIcon fontSize="small" sx={{ color: '#48bb78' }} />
+                                                    <Avatar sx={{
+                                                        width: 36,
+                                                        height: 36,
+                                                        background: 'rgba(52, 211, 153, 0.2)',
+                                                        border: '1px solid rgba(52, 211, 153, 0.3)'
+                                                    }}>
+                                                        <AccessTimeIcon fontSize="small" sx={{ color: '#34d399' }} />
                                                     </Avatar>
-                                                    <Typography variant="body2" color="text.secondary" fontWeight="500">
+                                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                                                         {new Date(request.createdAt).toLocaleString('ro-RO', {
                                                             day: '2-digit',
                                                             month: 'short',
@@ -390,13 +430,18 @@ function RoomServiceList() {
                                                         onClick={() => handleStatusChange(request.id, 'IN_PROGRESS')}
                                                         startIcon={<PlayArrowIcon />}
                                                         sx={{
-                                                            borderRadius: 3,
-                                                            py: 1.2,
+                                                            borderRadius: 2.5,
+                                                            py: 1.3,
                                                             fontWeight: 'bold',
                                                             borderWidth: 2,
+                                                            borderColor: '#667eea',
+                                                            color: '#667eea',
+                                                            background: 'rgba(102, 126, 234, 0.1)',
                                                             '&:hover': {
                                                                 borderWidth: 2,
-                                                                transform: 'scale(1.02)'
+                                                                borderColor: '#667eea',
+                                                                background: 'rgba(102, 126, 234, 0.2)',
+                                                                boxShadow: '0 0 25px rgba(102, 126, 234, 0.4)'
                                                             }
                                                         }}
                                                     >
@@ -410,15 +455,14 @@ function RoomServiceList() {
                                                         onClick={() => handleStatusChange(request.id, 'COMPLETED')}
                                                         startIcon={<CheckCircleOutlineIcon />}
                                                         sx={{
-                                                            borderRadius: 3,
-                                                            py: 1.2,
+                                                            borderRadius: 2.5,
+                                                            py: 1.3,
                                                             fontWeight: 'bold',
-                                                            background: 'linear-gradient(135deg, #66BB6A 0%, #43A047 100%)',
-                                                            boxShadow: '0 4px 14px rgba(67, 160, 71, 0.4)',
+                                                            background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+                                                            boxShadow: '0 0 30px rgba(52, 211, 153, 0.4)',
                                                             '&:hover': {
-                                                                background: 'linear-gradient(135deg, #43A047 0%, #2E7D32 100%)',
-                                                                boxShadow: '0 6px 20px rgba(67, 160, 71, 0.5)',
-                                                                transform: 'scale(1.02)'
+                                                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                                                boxShadow: '0 0 40px rgba(52, 211, 153, 0.6)'
                                                             }
                                                         }}
                                                     >
@@ -429,12 +473,13 @@ function RoomServiceList() {
                                                     <Chip
                                                         icon={<CheckCircleOutlineIcon />}
                                                         label="Comandă Finalizată"
-                                                        color="success"
                                                         sx={{
                                                             width: '100%',
-                                                            py: 1.5,
+                                                            py: 1.8,
                                                             fontWeight: 'bold',
-                                                            fontSize: '0.9rem'
+                                                            background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+                                                            color: 'white',
+                                                            boxShadow: '0 0 25px rgba(52, 211, 153, 0.3)'
                                                         }}
                                                     />
                                                 )}
@@ -447,7 +492,7 @@ function RoomServiceList() {
                     </AnimatePresence>
                 </Grid>
             )}
-        </motion.div>
+        </Box>
     );
 }
 
