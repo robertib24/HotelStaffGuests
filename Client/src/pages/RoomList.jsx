@@ -64,6 +64,11 @@ function RoomList() {
             if (minPrice && room.price < parseFloat(minPrice)) return false;
             if (maxPrice && room.price > parseFloat(maxPrice)) return false;
             return true;
+        }).sort((a, b) => {
+            // Extract numeric part from room number (e.g., "101" -> 101)
+            const numA = parseInt(a.number.replace(/\D/g, '')) || 0;
+            const numB = parseInt(b.number.replace(/\D/g, '')) || 0;
+            return numA - numB;
         });
     }, [rooms, filters]);
 
