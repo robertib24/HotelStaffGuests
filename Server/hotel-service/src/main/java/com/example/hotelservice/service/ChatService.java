@@ -5,14 +5,17 @@ import com.example.hotelservice.dto.HousekeepingRequestDTO;
 import com.example.hotelservice.dto.RoomServiceRequestDTO;
 import com.example.hotelservice.entity.ChatMessage;
 import com.example.hotelservice.entity.Guest;
+import com.example.hotelservice.entity.Reservation;
 import com.example.hotelservice.repository.ChatMessageRepository;
 import com.example.hotelservice.repository.GuestRepository;
+import com.example.hotelservice.repository.ReservationRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 @Service
 public class ChatService {
@@ -22,18 +25,21 @@ public class ChatService {
     private final HousekeepingRequestService housekeepingRequestService;
     private final ChatMessageRepository chatMessageRepository;
     private final GuestRepository guestRepository;
+    private final ReservationRepository reservationRepository;
     private final ObjectMapper objectMapper;
 
     public ChatService(AnthropicService anthropicService,
                       RoomServiceRequestService roomServiceRequestService,
                       HousekeepingRequestService housekeepingRequestService,
                       ChatMessageRepository chatMessageRepository,
-                      GuestRepository guestRepository) {
+                      GuestRepository guestRepository,
+                      ReservationRepository reservationRepository) {
         this.anthropicService = anthropicService;
         this.roomServiceRequestService = roomServiceRequestService;
         this.housekeepingRequestService = housekeepingRequestService;
         this.chatMessageRepository = chatMessageRepository;
         this.guestRepository = guestRepository;
+        this.reservationRepository = reservationRepository;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -95,10 +101,33 @@ public class ChatService {
                     String type = jsonResponse.get("type").asText();
                     String description = jsonResponse.get("description").asText();
 
-                    return ChatResponseDTO.builder()
-                            .response("Am înregistrat cererea ta pentru housekeeping: " + description + ". Echipa de curățenie va fi notificată!")
-                            .action("housekeeping")
-                            .build();
+                    Reservation activeReservation = reservationRepository.findAll().stream()
+                            .filter(r -> r.getGuest().getId().equals(guest.getId()))
+                            .filter(r -> !r.getStartDate().isAfter(LocalDate.now()))
+                            .filter(r -> !r.getEndDate().isBefore(LocalDate.now()))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (activeReservation != null) {
+                        HousekeepingRequestDTO dto = HousekeepingRequestDTO.builder()
+                                .roomId(activeReservation.getRoom().getId())
+                                .requestType(type)
+                                .description(description)
+                                .priority("NORMAL")
+                                .build();
+                        var created = housekeepingRequestService.createRequest(dto, guest.getEmail());
+
+                        return ChatResponseDTO.builder()
+                                .response("Am înregistrat cererea ta pentru housekeeping: " + description + ". Echipa de curățenie va fi notificată!")
+                                .action("housekeeping")
+                                .actionData(created)
+                                .build();
+                    } else {
+                        return ChatResponseDTO.builder()
+                                .response("Nu am găsit o rezervare activă pentru tine. Te rog să contactezi recepția pentru asistență.")
+                                .action("error")
+                                .build();
+                    }
                 }
             }
         } catch (JsonProcessingException e) {
