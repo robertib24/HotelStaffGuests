@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    Box, 
-    Paper, 
-    Typography, 
-    Rating, 
-    Avatar, 
+import {
+    Box,
+    Paper,
+    Typography,
+    Rating,
+    Avatar,
     Button,
     TextField,
     Dialog,
@@ -12,12 +12,16 @@ import {
     DialogContent,
     DialogActions,
     Chip,
-    Divider
+    Divider,
+    IconButton,
+    Collapse
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import StarIcon from '@mui/icons-material/Star';
 import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/Person';
+import ReplyIcon from '@mui/icons-material/Reply';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -29,10 +33,13 @@ function RoomReviews({ roomId }) {
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(true);
+    const [respondingTo, setRespondingTo] = useState(null);
+    const [responseText, setResponseText] = useState('');
     const auth = useAuth();
     const { showToast } = useToast();
 
     const isGuest = auth.user?.role === 'ROLE_GUEST';
+    const isStaff = auth.user?.role === 'ROLE_Admin' || auth.user?.role === 'ROLE_Manager';
 
     useEffect(() => {
         fetchReviews();
@@ -82,11 +89,32 @@ function RoomReviews({ roomId }) {
         }
     };
 
+    const handleRespondToReview = async (reviewId) => {
+        if (responseText.trim().length < 10) {
+            showToast('Răspunsul trebuie să aibă minim 10 caractere', 'error');
+            return;
+        }
+
+        try {
+            await axios.post(
+                `http://localhost:8080/api/staff/reviews/${reviewId}/respond`,
+                { response: responseText },
+                { headers: { Authorization: `Bearer ${auth.token}` } }
+            );
+            showToast('Răspuns trimis cu succes!', 'success');
+            setRespondingTo(null);
+            setResponseText('');
+            fetchReviews();
+        } catch (error) {
+            showToast('Eroare la trimiterea răspunsului', 'error');
+        }
+    };
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('ro-RO', { 
-            year: 'numeric', 
-            month: 'long', 
+        return date.toLocaleDateString('ro-RO', {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -168,9 +196,82 @@ function RoomReviews({ roomId }) {
                                             </Box>
                                             <Rating value={review.rating} readOnly size="small" />
                                         </Box>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                             {review.comment}
                                         </Typography>
+
+                                        {review.staffResponse && (
+                                            <Box
+                                                sx={{
+                                                    mt: 2,
+                                                    p: 2,
+                                                    borderRadius: 2,
+                                                    background: 'rgba(59, 130, 246, 0.1)',
+                                                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                                                }}
+                                            >
+                                                <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                                                    <Avatar sx={{ width: 28, height: 28, bgcolor: 'primary.main' }}>
+                                                        <SupportAgentIcon sx={{ fontSize: 16 }} />
+                                                    </Avatar>
+                                                    <Typography variant="caption" fontWeight="bold" color="primary">
+                                                        Răspuns Staff
+                                                    </Typography>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        • {formatDate(review.respondedAt)}
+                                                    </Typography>
+                                                </Box>
+                                                <Typography variant="body2" color="text.secondary" sx={{ ml: 4.5 }}>
+                                                    {review.staffResponse}
+                                                </Typography>
+                                            </Box>
+                                        )}
+
+                                        {isStaff && !review.staffResponse && (
+                                            <Box sx={{ mt: 2 }}>
+                                                {respondingTo === review.id ? (
+                                                    <Box>
+                                                        <TextField
+                                                            fullWidth
+                                                            multiline
+                                                            rows={3}
+                                                            placeholder="Scrie răspunsul tău aici..."
+                                                            value={responseText}
+                                                            onChange={(e) => setResponseText(e.target.value)}
+                                                            sx={{ mb: 1 }}
+                                                        />
+                                                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                                            <Button
+                                                                size="small"
+                                                                onClick={() => {
+                                                                    setRespondingTo(null);
+                                                                    setResponseText('');
+                                                                }}
+                                                            >
+                                                                Anulează
+                                                            </Button>
+                                                            <Button
+                                                                variant="contained"
+                                                                size="small"
+                                                                onClick={() => handleRespondToReview(review.id)}
+                                                                disabled={responseText.trim().length < 10}
+                                                            >
+                                                                Trimite Răspuns
+                                                            </Button>
+                                                        </Box>
+                                                    </Box>
+                                                ) : (
+                                                    <Button
+                                                        size="small"
+                                                        startIcon={<ReplyIcon />}
+                                                        onClick={() => setRespondingTo(review.id)}
+                                                        sx={{ color: 'primary.main' }}
+                                                    >
+                                                        Răspunde
+                                                    </Button>
+                                                )}
+                                            </Box>
+                                        )}
                                     </Paper>
                                 </motion.div>
                             ))}

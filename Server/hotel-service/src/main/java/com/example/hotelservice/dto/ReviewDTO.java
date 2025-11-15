@@ -15,6 +15,9 @@ public class ReviewDTO {
     private Integer rating;
     private String comment;
     private LocalDateTime createdAt;
+    private String staffResponse;
+    private LocalDateTime respondedAt;
+    private String respondedBy;
 
     public ReviewDTO(Review review) {
         this.id = review.getId();
@@ -25,5 +28,8 @@ public class ReviewDTO {
         this.rating = review.getRating();
         this.comment = review.getComment();
         this.createdAt = review.getCreatedAt();
+        this.staffResponse = review.getStaffResponse();
+        this.respondedAt = review.getRespondedAt();
+        this.respondedBy = review.getRespondedBy();
     }
 }

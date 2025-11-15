@@ -60,6 +60,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/staff/room-service-requests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Chef")
                         .requestMatchers("/api/staff/housekeeping-requests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Cleaner")
+                        .requestMatchers("/api/staff/reviews/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager")
 
                         .requestMatchers("/api/client/profile").hasAuthority("ROLE_GUEST")
                         .requestMatchers("/api/client/chat").hasAuthority("ROLE_GUEST")

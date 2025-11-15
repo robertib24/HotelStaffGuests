@@ -3,6 +3,7 @@ package com.example.hotelservice.service;
 import com.example.hotelservice.entity.Reservation;
 import com.example.hotelservice.entity.RoomServiceRequest;
 import com.example.hotelservice.entity.HousekeepingRequest;
+import com.example.hotelservice.entity.Review;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -175,6 +176,44 @@ public class EmailService {
                 newStatus,
                 request.getCreatedAt().format(formatter),
                 statusMessage
+        );
+    }
+
+    @Async
+    public void sendReviewResponseNotification(Review review) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(review.getGuest().getEmail());
+            message.setSubject("Răspuns la Recenzia Dumneavoastră");
+            message.setText(buildReviewResponseEmailBody(review));
+
+            mailSender.send(message);
+            log.info("Email răspuns recenzie trimis către: {}", review.getGuest().getEmail());
+        } catch (Exception e) {
+            log.error("Eroare la trimiterea email-ului pentru răspuns recenzie: {}", e.getMessage());
+        }
+    }
+
+    private String buildReviewResponseEmailBody(Review review) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        return String.format(
+                "Bună ziua %s,\n\n" +
+                        "Am primit recenzia dumneavoastră și dorim să vă mulțumim pentru feedback!\n\n" +
+                        "Recenzia dumneavoastră:\n" +
+                        "Camera: %s\n" +
+                        "Rating: %d/5 stele\n" +
+                        "Comentariu: %s\n\n" +
+                        "Răspunsul nostru:\n" +
+                        "%s\n\n" +
+                        "Vă mulțumim că ați ales hotelul nostru!\n\n" +
+                        "Cu stimă,\n" +
+                        "Echipa Hotel Admin",
+                review.getGuest().getName(),
+                review.getRoom().getType() + " - Camera " + review.getRoom().getNumber(),
+                review.getRating(),
+                review.getComment(),
+                review.getStaffResponse()
         );
     }
 

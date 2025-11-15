@@ -303,6 +303,63 @@ struct ReviewCard: View {
                 .font(.body)
                 .foregroundColor(Color("textPrimary"))
                 .fixedSize(horizontal: false, vertical: true)
+
+            if let staffResponse = review.staffResponse {
+                VStack(alignment: .leading, spacing: 8) {
+                    Divider()
+                        .background(Color("textSecondary").opacity(0.2))
+                        .padding(.vertical, 4)
+
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color("blue").opacity(0.3), Color("purple").opacity(0.3)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                Image(systemName: "person.badge.shield.checkmark.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(
+                                        LinearGradient(
+                                            colors: [Color("blue"), Color("purple")],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            )
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Răspuns Staff")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color("blue"))
+
+                            if let respondedAt = review.respondedAt {
+                                Text(formatDate(respondedAt))
+                                    .font(.caption2)
+                                    .foregroundColor(Color("textSecondary"))
+                            }
+                        }
+                    }
+
+                    Text(staffResponse)
+                        .font(.callout)
+                        .foregroundColor(Color("textSecondary"))
+                        .padding(12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color("blue").opacity(0.05))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color("blue").opacity(0.2), lineWidth: 1)
+                                )
+                        )
+                }
+            }
         }
         .padding()
         .background(Color("background"))

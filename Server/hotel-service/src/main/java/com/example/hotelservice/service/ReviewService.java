@@ -12,6 +12,7 @@ import com.example.hotelservice.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,13 +24,16 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
+    private final EmailService emailService;
 
     public ReviewService(ReviewRepository reviewRepository,
                          GuestRepository guestRepository,
-                         RoomRepository roomRepository) {
+                         RoomRepository roomRepository,
+                         EmailService emailService) {
         this.reviewRepository = reviewRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -87,5 +91,28 @@ public class ReviewService {
         }
 
         reviewRepository.delete(review);
+    }
+
+    @Transactional
+    public ReviewDTO respondToReview(Long reviewId, String response, String staffEmail) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review-ul cu id " + reviewId + " nu a fost găsit."));
+
+        review.setStaffResponse(response);
+        review.setRespondedAt(LocalDateTime.now());
+        review.setRespondedBy(staffEmail);
+
+        Review savedReview = reviewRepository.save(review);
+
+        // Send email notification to guest
+        emailService.sendReviewResponseNotification(savedReview);
+
+        return new ReviewDTO(savedReview);
+    }
+
+    public List<ReviewDTO> getAllReviews() {
+        return reviewRepository.findAll().stream()
+                .map(ReviewDTO::new)
+                .collect(Collectors.toList());
     }
 }
