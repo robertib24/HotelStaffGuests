@@ -28,6 +28,13 @@ public class AnthropicService {
     }
 
     public String chat(String userMessage, String systemPrompt) throws IOException {
+        if (apiKey == null || apiKey.isEmpty() || apiKey.startsWith("${")) {
+            throw new IOException("ANTHROPIC_API_KEY is not configured. Please set it in environment variables.");
+        }
+
+        System.out.println("🔑 Using API key: " + (apiKey.substring(0, Math.min(10, apiKey.length())) + "..."));
+        System.out.println("🤖 Model: " + model);
+
         ObjectNode requestBody = objectMapper.createObjectNode();
         requestBody.put("model", model);
         requestBody.put("max_tokens", 1024);
@@ -49,6 +56,8 @@ public class AnthropicService {
                 MediaType.parse("application/json")
         );
 
+        System.out.println("📡 Sending request to Anthropic API...");
+
         Request request = new Request.Builder()
                 .url("https://api.anthropic.com/v1/messages")
                 .addHeader("x-api-key", apiKey)
@@ -58,11 +67,15 @@ public class AnthropicService {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
+            String responseBody = response.body() != null ? response.body().string() : "null";
+
             if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
+                System.err.println("❌ API Error - Code: " + response.code());
+                System.err.println("❌ Response: " + responseBody);
+                throw new IOException("API request failed with code " + response.code() + ": " + responseBody);
             }
 
-            String responseBody = response.body().string();
+            System.out.println("✅ API Response received");
             JsonNode jsonResponse = objectMapper.readTree(responseBody);
 
             return jsonResponse.get("content").get(0).get("text").asText();

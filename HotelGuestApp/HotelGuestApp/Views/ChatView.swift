@@ -10,6 +10,23 @@ struct ChatView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                if let error = errorMessage {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.red)
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                        Spacer()
+                        Button("OK") {
+                            errorMessage = nil
+                        }
+                        .font(.caption)
+                    }
+                    .padding(8)
+                    .background(Color.red.opacity(0.1))
+                }
+
                 messageList
                 messageInput
             }
@@ -107,18 +124,29 @@ struct ChatView: View {
         newMessage = ""
         isLoading = true
 
+        print("📤 Sending message: \(messageToSend)")
+
         Task {
             do {
+                print("🔄 Calling API...")
                 let response = try await apiService.sendChatMessage(messageToSend)
+                print("✅ Received response: \(response.response)")
+                print("🎬 Action: \(response.action ?? "none")")
+
                 let botMessage = ChatMessageModel(text: response.response, isUser: false, timestamp: Date())
 
                 await MainActor.run {
                     messages.append(botMessage)
                     isLoading = false
+                    print("✅ Message added to UI")
                 }
             } catch {
+                print("❌ Error: \(error)")
                 await MainActor.run {
-                    errorMessage = "Eroare: \(error.localizedDescription)"
+                    let errorMsg = "Eroare: \(error.localizedDescription)"
+                    errorMessage = errorMsg
+                    let errorBubble = ChatMessageModel(text: errorMsg, isUser: false, timestamp: Date())
+                    messages.append(errorBubble)
                     isLoading = false
                 }
             }
