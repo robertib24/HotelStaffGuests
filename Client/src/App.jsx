@@ -10,11 +10,14 @@ import DashboardHome from './pages/DashboardHome';
 import EarningsReport from './pages/EarningsReport';
 import ReservationList from './pages/ReservationList';
 import HousekeepingList from './pages/HousekeepingList';
+import RoomServiceList from './pages/RoomServiceList';
+import HousekeepingRequestsList from './pages/HousekeepingRequestsList';
 import './App.css';
 
 function App() {
   const adminRoles = ['ROLE_Admin'];
   const managerRoles = ['ROLE_Admin', 'ROLE_Manager'];
+  const housekeepingRoles = ['ROLE_Admin', 'ROLE_Manager', 'ROLE_Cleaner'];
 
   return (
     <Routes>
@@ -28,6 +31,14 @@ function App() {
           <Route element={<RoleBasedRoute allowedRoles={adminRoles} />}>
             <Route path="employees" element={<EmployeeList />} />
             <Route path="reports" element={<EarningsReport />} />
+          </Route>
+
+          <Route element={<RoleBasedRoute allowedRoles={managerRoles} />}>
+            <Route path="room-service" element={<RoomServiceList />} />
+          </Route>
+
+          <Route element={<RoleBasedRoute allowedRoles={housekeepingRoles} />}>
+            <Route path="housekeeping-requests" element={<HousekeepingRequestsList />} />
           </Route>
 
           <Route path="reservations" element={<ReservationList />} />
