@@ -23,15 +23,18 @@ public class RoomServiceRequestService {
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final EmailService emailService;
 
     public RoomServiceRequestService(RoomServiceRequestRepository requestRepository,
                                      GuestRepository guestRepository,
                                      RoomRepository roomRepository,
-                                     SimpMessagingTemplate messagingTemplate) {
+                                     SimpMessagingTemplate messagingTemplate,
+                                     EmailService emailService) {
         this.requestRepository = requestRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
         this.messagingTemplate = messagingTemplate;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -84,12 +87,17 @@ public class RoomServiceRequestService {
         RoomServiceRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
+        String oldStatus = request.getStatus();
         request.setStatus(status);
 
         if ("COMPLETED".equals(status)) {
             request.setCompletedAt(LocalDateTime.now());
         }
 
-        return requestRepository.save(request);
+        RoomServiceRequest saved = requestRepository.save(request);
+
+        emailService.sendRoomServiceStatusUpdate(saved, oldStatus, status);
+
+        return saved;
     }
 }

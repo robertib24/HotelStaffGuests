@@ -23,15 +23,18 @@ public class HousekeepingRequestService {
     private final GuestRepository guestRepository;
     private final RoomRepository roomRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final EmailService emailService;
 
     public HousekeepingRequestService(HousekeepingRequestRepository requestRepository,
                                       GuestRepository guestRepository,
                                       RoomRepository roomRepository,
-                                      SimpMessagingTemplate messagingTemplate) {
+                                      SimpMessagingTemplate messagingTemplate,
+                                      EmailService emailService) {
         this.requestRepository = requestRepository;
         this.guestRepository = guestRepository;
         this.roomRepository = roomRepository;
         this.messagingTemplate = messagingTemplate;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -87,12 +90,17 @@ public class HousekeepingRequestService {
         HousekeepingRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
 
+        String oldStatus = request.getStatus();
         request.setStatus(status);
 
         if ("COMPLETED".equals(status)) {
             request.setCompletedAt(LocalDateTime.now());
         }
 
-        return requestRepository.save(request);
+        HousekeepingRequest saved = requestRepository.save(request);
+
+        emailService.sendHousekeepingStatusUpdate(saved, oldStatus, status);
+
+        return saved;
     }
 }

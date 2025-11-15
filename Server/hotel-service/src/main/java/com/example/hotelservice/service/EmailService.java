@@ -1,6 +1,8 @@
 package com.example.hotelservice.service;
 
 import com.example.hotelservice.entity.Reservation;
+import com.example.hotelservice.entity.RoomServiceRequest;
+import com.example.hotelservice.entity.HousekeepingRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -84,5 +86,104 @@ public class EmailService {
                 reservation.getGuest().getName(),
                 reservation.getReservationCode()
         );
+    }
+
+    @Async
+    public void sendRoomServiceStatusUpdate(RoomServiceRequest request, String oldStatus, String newStatus) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(request.getGuest().getEmail());
+            message.setSubject("Actualizare Comandă Room Service #" + request.getId());
+            message.setText(buildRoomServiceEmailBody(request, oldStatus, newStatus));
+
+            mailSender.send(message);
+            log.info("Email room service trimis către: {}", request.getGuest().getEmail());
+        } catch (Exception e) {
+            log.error("Eroare la trimiterea email-ului room service: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    public void sendHousekeepingStatusUpdate(HousekeepingRequest request, String oldStatus, String newStatus) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(request.getGuest().getEmail());
+            message.setSubject("Actualizare Cerere Curățenie #" + request.getId());
+            message.setText(buildHousekeepingEmailBody(request, oldStatus, newStatus));
+
+            mailSender.send(message);
+            log.info("Email housekeeping trimis către: {}", request.getGuest().getEmail());
+        } catch (Exception e) {
+            log.error("Eroare la trimiterea email-ului housekeeping: {}", e.getMessage());
+        }
+    }
+
+    private String buildRoomServiceEmailBody(RoomServiceRequest request, String oldStatus, String newStatus) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String statusMessage = getStatusMessage(newStatus);
+
+        return String.format(
+                "Bună ziua %s,\n\n" +
+                        "Comanda dumneavoastră de room service a fost actualizată!\n\n" +
+                        "Detalii comandă:\n" +
+                        "Număr: #%d\n" +
+                        "Cameră: %s\n" +
+                        "Cerere: %s\n" +
+                        "Status anterior: %s\n" +
+                        "Status curent: %s\n" +
+                        "Data: %s\n\n" +
+                        "%s\n\n" +
+                        "Cu stimă,\n" +
+                        "Echipa Hotel Admin",
+                request.getGuest().getName(),
+                request.getId(),
+                request.getRoom() != null ? request.getRoom().getNumber() : "N/A",
+                request.getRequest(),
+                oldStatus,
+                newStatus,
+                request.getCreatedAt().format(formatter),
+                statusMessage
+        );
+    }
+
+    private String buildHousekeepingEmailBody(HousekeepingRequest request, String oldStatus, String newStatus) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String statusMessage = getStatusMessage(newStatus);
+
+        return String.format(
+                "Bună ziua %s,\n\n" +
+                        "Cererea dumneavoastră de curățenie a fost actualizată!\n\n" +
+                        "Detalii cerere:\n" +
+                        "Număr: #%d\n" +
+                        "Cameră: %s\n" +
+                        "Tip: %s\n" +
+                        "Descriere: %s\n" +
+                        "Prioritate: %s\n" +
+                        "Status anterior: %s\n" +
+                        "Status curent: %s\n" +
+                        "Data: %s\n\n" +
+                        "%s\n\n" +
+                        "Cu stimă,\n" +
+                        "Echipa Hotel Admin",
+                request.getGuest().getName(),
+                request.getId(),
+                request.getRoom() != null ? request.getRoom().getNumber() : "N/A",
+                request.getRequestType(),
+                request.getDescription() != null ? request.getDescription() : "Fără descriere",
+                request.getPriority(),
+                oldStatus,
+                newStatus,
+                request.getCreatedAt().format(formatter),
+                statusMessage
+        );
+    }
+
+    private String getStatusMessage(String status) {
+        return switch (status) {
+            case "PENDING" -> "Cererea dumneavoastră este în așteptare și va fi procesată în curând.";
+            case "IN_PROGRESS" -> "Personalul nostru lucrează la cererea dumneavoastră în acest moment!";
+            case "COMPLETED" -> "Cererea dumneavoastră a fost finalizată cu succes. Mulțumim!";
+            default -> "Statusul cererii a fost actualizat.";
+        };
     }
 }

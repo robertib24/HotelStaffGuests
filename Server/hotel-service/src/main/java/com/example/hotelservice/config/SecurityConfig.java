@@ -58,7 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/guests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
                         .requestMatchers("/api/reservations/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist")
 
-                        .requestMatchers("/api/staff/room-service-requests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager")
+                        .requestMatchers("/api/staff/room-service-requests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Chef")
                         .requestMatchers("/api/staff/housekeeping-requests/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Cleaner")
 
                         .requestMatchers("/api/client/profile").hasAuthority("ROLE_GUEST")
