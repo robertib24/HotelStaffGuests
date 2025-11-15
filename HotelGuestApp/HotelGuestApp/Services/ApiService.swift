@@ -102,7 +102,13 @@ class ApiService: ObservableObject {
         guard isAuthenticated else { throw URLError(.userAuthenticationRequired) }
         return try await putRequest(endpoint: "/client/profile", data: request)
     }
-    
+
+    func sendChatMessage(_ message: String) async throws -> ChatResponse {
+        guard isAuthenticated else { throw URLError(.userAuthenticationRequired) }
+        let request = ChatRequest(message: message)
+        return try await postRequest(endpoint: "/client/chat", data: request, authenticated: true)
+    }
+
     private func getRequest<T: Decodable>(endpoint: String, authenticated: Bool) async throws -> T {
         guard let url = URL(string: baseURL + endpoint) else {
             throw URLError(.badURL)
