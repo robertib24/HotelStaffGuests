@@ -1,6 +1,7 @@
 package com.example.hotelservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -22,6 +23,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Table(name = "guests")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Guest implements UserDetails {
 
     @Id

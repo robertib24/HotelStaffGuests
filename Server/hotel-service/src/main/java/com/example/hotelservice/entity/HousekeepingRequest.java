@@ -1,5 +1,6 @@
 package com.example.hotelservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Table(name = "housekeeping_requests")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class HousekeepingRequest {
 
     @Id
