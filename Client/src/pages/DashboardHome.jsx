@@ -389,13 +389,11 @@ const ReceptionistDashboard = ({ stats }) => {
 
 const CleanerDashboard = ({ stats }) => {
     const navigate = useNavigate();
-    const totalRooms = stats.availableRooms + stats.needsCleaningRooms + stats.occupiedRooms + stats.inMaintenanceRooms;
-    const completionPercentage = totalRooms > 0 ? Math.round((stats.availableRooms / totalRooms) * 100) : 0;
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
             <Grid container spacing={3} sx={{ maxWidth: '100%' }} justifyContent="center">
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid item xs={12} sm={6} md={6}>
                     <StatWidget
                         title="Camere ce Necesită Curățenie"
                         value={stats.needsCleaningRooms}
@@ -404,20 +402,12 @@ const CleanerDashboard = ({ stats }) => {
                         onClick={() => navigate('/housekeeping')}
                     />
                 </Grid>
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid item xs={12} sm={6} md={6}>
                     <StatWidget
                         title="Camere Curate"
                         value={stats.availableRooms}
                         icon={<CheckCircleIcon sx={{ fontSize: 36 }} />}
                         color="#10b981"
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                    <StatWidget
-                        title="Progres Curățenie"
-                        value={completionPercentage}
-                        icon={<EventAvailableIcon sx={{ fontSize: 36 }} />}
-                        color="#8b5cf6"
                     />
                 </Grid>
             </Grid>
