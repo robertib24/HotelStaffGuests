@@ -1,25 +1,29 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import ProtectedRoute from '../ProtectedRoute';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { BrowserRouter, Routes, Route, MemoryRouter } from 'react-router-dom';
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
+import ProtectedRoute from '../ProtectedRoute';
 import { useAuth } from '../../context/AuthContext';
 
 describe('ProtectedRoute', () => {
-  const renderWithRouter = (component) => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const renderWithRouter = (component, initialRoute = '/') => {
     return render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={[initialRoute]}>
         <Routes>
           <Route path="/" element={component}>
             <Route index element={<div>Protected Content</div>} />
           </Route>
           <Route path="/login" element={<div>Login Page</div>} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
   };
 
