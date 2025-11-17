@@ -1,18 +1,22 @@
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import RoleBasedRoute from '../RoleBasedRoute';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 vi.mock('../../context/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
+import RoleBasedRoute from '../RoleBasedRoute';
 import { useAuth } from '../../context/AuthContext';
 
 describe('RoleBasedRoute', () => {
-  const renderWithRouter = (component, allowedRoles) => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const renderWithRouter = (allowedRoles) => {
     return render(
-      <BrowserRouter>
+      <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<RoleBasedRoute allowedRoles={allowedRoles} />}>
             <Route index element={<div>Protected Content</div>} />
@@ -20,7 +24,7 @@ describe('RoleBasedRoute', () => {
           <Route path="/login" element={<div>Login Page</div>} />
           <Route path="/reservations" element={<div>Reservations Page</div>} />
         </Routes>
-      </BrowserRouter>
+      </MemoryRouter>
     );
   };
 
@@ -29,7 +33,7 @@ describe('RoleBasedRoute', () => {
       user: null,
     });
 
-    renderWithRouter(<RoleBasedRoute />, ['ROLE_ADMIN']);
+    renderWithRouter(['ROLE_ADMIN']);
 
     expect(screen.getByText('Login Page')).toBeInTheDocument();
   });
@@ -39,7 +43,7 @@ describe('RoleBasedRoute', () => {
       user: { role: 'ROLE_ADMIN' },
     });
 
-    renderWithRouter(<RoleBasedRoute />, ['ROLE_ADMIN']);
+    renderWithRouter(['ROLE_ADMIN']);
 
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
   });
@@ -49,7 +53,7 @@ describe('RoleBasedRoute', () => {
       user: { role: 'ROLE_RECEPTIONIST' },
     });
 
-    renderWithRouter(<RoleBasedRoute />, ['ROLE_ADMIN']);
+    renderWithRouter(['ROLE_ADMIN']);
 
     expect(screen.getByText('Reservations Page')).toBeInTheDocument();
   });
@@ -59,7 +63,7 @@ describe('RoleBasedRoute', () => {
       user: { role: 'ROLE_MANAGER' },
     });
 
-    renderWithRouter(<RoleBasedRoute />, ['ROLE_ADMIN', 'ROLE_MANAGER']);
+    renderWithRouter(['ROLE_ADMIN', 'ROLE_MANAGER']);
 
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
   });

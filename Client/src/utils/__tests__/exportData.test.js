@@ -7,9 +7,11 @@ describe('exportToCSV', () => {
   let appendChildSpy;
   let removeChildSpy;
   let clickSpy;
-  let revokeObjectURLSpy;
 
   beforeEach(() => {
+    global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+    global.URL.revokeObjectURL = vi.fn();
+
     alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
 
     clickSpy = vi.fn();
@@ -22,8 +24,6 @@ describe('exportToCSV', () => {
     createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockLink);
     appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => {});
     removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => {});
-    revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock-url');
   });
 
   afterEach(() => {
