@@ -11,7 +11,11 @@ struct CreateReservationView: View {
     @State private var isLoading = false
     
     var numberOfNights: Int {
-        Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: startDate)
+        let end = calendar.startOfDay(for: endDate)
+        let components = calendar.dateComponents([.day], from: start, to: end)
+        return components.day ?? 0
     }
     
     var totalPrice: Double {

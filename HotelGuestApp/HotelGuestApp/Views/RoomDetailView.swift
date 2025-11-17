@@ -370,8 +370,7 @@ struct ReviewCard: View {
         let formatter = ISO8601DateFormatter()
         if let date = formatter.date(from: dateString) {
             let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .medium
-            displayFormatter.timeStyle = .short
+            displayFormatter.dateFormat = "d MMM yyyy, HH:mm"
             displayFormatter.locale = Locale(identifier: "ro_RO")
             return displayFormatter.string(from: date)
         }
