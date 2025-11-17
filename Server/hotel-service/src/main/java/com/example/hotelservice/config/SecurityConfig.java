@@ -51,6 +51,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.PUT, "/api/rooms/{id}/status").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Cleaner")
                         .requestMatchers(HttpMethod.GET, "/api/rooms/status/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Cleaner")
+                        .requestMatchers(HttpMethod.POST, "/api/rooms/sync-status").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist", "ROLE_Cleaner")
 
                         .requestMatchers(HttpMethod.GET, "/api/rooms/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager", "ROLE_Receptionist", "ROLE_Cleaner")
                         .requestMatchers("/api/rooms/**").hasAnyAuthority("ROLE_Admin", "ROLE_Manager")
