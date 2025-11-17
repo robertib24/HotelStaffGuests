@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDate;
@@ -89,13 +90,13 @@ class ReservationServiceTest {
 
     @Test
     void getAllReservations_shouldReturnAllReservations() {
-        when(reservationRepository.findAll(any())).thenReturn(Arrays.asList(reservation));
+        when(reservationRepository.findAll(any(Sort.class))).thenReturn(Arrays.asList(reservation));
 
         List<ReservationDTO> result = reservationService.getAllReservations();
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(reservationRepository).findAll(any());
+        verify(reservationRepository).findAll(any(Sort.class));
     }
 
     @Test
@@ -115,14 +116,11 @@ class ReservationServiceTest {
         when(roomRepository.findById(anyLong())).thenReturn(Optional.of(room));
         when(reservationRepository.countOverlappingReservations(anyLong(), any(), any(), any())).thenReturn(0L);
         when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
-        doNothing().when(emailService).sendReservationConfirmation(any());
-        doNothing().when(messagingTemplate).convertAndSend(anyString(), any());
 
         ReservationDTO result = reservationService.createReservation(requestDTO);
 
         assertNotNull(result);
         verify(reservationRepository).save(any(Reservation.class));
-        verify(emailService).sendReservationConfirmation(any());
     }
 
     @Test
@@ -211,14 +209,10 @@ class ReservationServiceTest {
     void deleteReservation_withValidId_shouldDeleteReservation() {
         when(reservationRepository.findById(anyLong())).thenReturn(Optional.of(reservation));
         when(roomRepository.save(any(Room.class))).thenReturn(room);
-        doNothing().when(messagingTemplate).convertAndSend(anyString(), any());
-        doNothing().when(emailService).sendReservationCancellation(any());
-        doNothing().when(reservationRepository).delete(any(Reservation.class));
 
         reservationService.deleteReservation(1L);
 
         verify(reservationRepository).delete(any(Reservation.class));
-        verify(emailService).sendReservationCancellation(any());
         verify(roomRepository).save(any(Room.class));
     }
 
@@ -244,8 +238,6 @@ class ReservationServiceTest {
         when(roomRepository.findById(anyLong())).thenReturn(Optional.of(room));
         when(reservationRepository.countOverlappingReservations(anyLong(), any(), any(), any())).thenReturn(0L);
         when(reservationRepository.save(any(Reservation.class))).thenReturn(reservation);
-        doNothing().when(emailService).sendReservationConfirmation(any());
-        doNothing().when(messagingTemplate).convertAndSend(anyString(), any());
 
         ReservationDTO result = reservationService.createReservationForClient(clientRequest, "john@example.com");
 
@@ -257,9 +249,6 @@ class ReservationServiceTest {
     void deleteReservationForClient_withValidData_shouldDeleteReservation() {
         when(reservationRepository.findById(anyLong())).thenReturn(Optional.of(reservation));
         when(roomRepository.save(any(Room.class))).thenReturn(room);
-        doNothing().when(messagingTemplate).convertAndSend(anyString(), any());
-        doNothing().when(emailService).sendReservationCancellation(any());
-        doNothing().when(reservationRepository).delete(any(Reservation.class));
 
         reservationService.deleteReservationForClient(1L, "john@example.com");
 

@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,13 +62,13 @@ class RoomServiceTest {
         room2.setPrice(150.0);
         room2.setStatus("Disponibilă");
 
-        when(roomRepository.findAll(any())).thenReturn(Arrays.asList(room, room2));
+        when(roomRepository.findAll(any(Sort.class))).thenReturn(Arrays.asList(room, room2));
 
         List<Room> result = roomService.getAllRooms();
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(roomRepository).findAll(any());
+        verify(roomRepository).findAll(any(Sort.class));
     }
 
     @Test
@@ -92,14 +93,14 @@ class RoomServiceTest {
 
     @Test
     void getRoomsByStatus_shouldReturnFilteredRooms() {
-        when(roomRepository.findByStatus(anyString(), any())).thenReturn(Arrays.asList(room));
+        when(roomRepository.findByStatus(anyString(), any(Sort.class))).thenReturn(Arrays.asList(room));
 
         List<Room> result = roomService.getRoomsByStatus("Disponibilă");
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("Disponibilă", result.get(0).getStatus());
-        verify(roomRepository).findByStatus(eq("Disponibilă"), any());
+        verify(roomRepository).findByStatus(eq("Disponibilă"), any(Sort.class));
     }
 
     @Test
@@ -150,7 +151,6 @@ class RoomServiceTest {
     @Test
     void deleteRoom_withValidId_shouldDeleteRoom() {
         when(roomRepository.existsById(anyLong())).thenReturn(true);
-        doNothing().when(roomRepository).deleteById(anyLong());
 
         roomService.deleteRoom(1L);
 
