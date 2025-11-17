@@ -47,9 +47,9 @@ class ReservationControllerTest {
         reservationDTO.setId(1L);
         reservationDTO.setGuestId(1L);
         reservationDTO.setGuestName("John Doe");
-        reservationDTO.setGuestEmail("john@example.com");
         reservationDTO.setRoomId(1L);
         reservationDTO.setRoomNumber("101");
+        reservationDTO.setRoomType("Standard");
         reservationDTO.setStartDate(LocalDate.now().plusDays(1));
         reservationDTO.setEndDate(LocalDate.now().plusDays(3));
         reservationDTO.setTotalPrice(200.0);
