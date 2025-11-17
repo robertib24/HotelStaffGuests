@@ -321,7 +321,7 @@ function RoomList() {
         }
 
         return baseColumns;
-    }, [canManage, handleDeleteClick]);
+    }, [canManage, handleDeleteClick, filteredRooms]);
 
     if (loading) {
         return (
