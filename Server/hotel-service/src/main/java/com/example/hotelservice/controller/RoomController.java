@@ -55,4 +55,10 @@ public class RoomController {
         roomService.deleteRoom(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/sync-status")
+    public ResponseEntity<String> syncRoomStatusWithReservations() {
+        roomService.syncRoomStatusWithReservations();
+        return ResponseEntity.ok("Statusurile camerelor au fost sincronizate cu rezervările active.");
+    }
 }

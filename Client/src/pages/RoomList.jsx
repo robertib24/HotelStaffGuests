@@ -177,7 +177,19 @@ function RoomList() {
                 align: 'center',
                 renderCell: (params) => {
                     const index = filteredRooms.findIndex(room => room.id === params.row.id) + 1;
-                    return <Typography variant="body2">{index}</Typography>;
+                    return (
+                        <Box sx={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <Typography variant="body2" fontWeight={600}>
+                                {index}
+                            </Typography>
+                        </Box>
+                    );
                 },
                 sortable: false
             },

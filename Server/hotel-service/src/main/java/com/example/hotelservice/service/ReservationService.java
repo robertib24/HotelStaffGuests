@@ -70,6 +70,12 @@ public class ReservationService {
         checkForOverlappingReservations(request.getRoomId(), request.getStartDate(), request.getEndDate(), null);
 
         Reservation reservation = buildReservation(guest, room, request.getStartDate(), request.getEndDate());
+
+        if (!request.getStartDate().isAfter(LocalDate.now())) {
+            room.setStatus("Ocupat");
+            roomRepository.save(room);
+        }
+
         Reservation savedReservation = reservationRepository.save(reservation);
 
         emailService.sendReservationConfirmation(savedReservation);
@@ -90,6 +96,12 @@ public class ReservationService {
         checkForOverlappingReservations(request.getRoomId(), request.getStartDate(), request.getEndDate(), null);
 
         Reservation reservation = buildReservation(guest, room, request.getStartDate(), request.getEndDate());
+
+        if (!request.getStartDate().isAfter(LocalDate.now())) {
+            room.setStatus("Ocupat");
+            roomRepository.save(room);
+        }
+
         Reservation savedReservation = reservationRepository.save(reservation);
 
         emailService.sendReservationConfirmation(savedReservation);
@@ -112,6 +124,12 @@ public class ReservationService {
         validateReservationDates(request.getStartDate(), request.getEndDate());
         checkForOverlappingReservations(request.getRoomId(), request.getStartDate(), request.getEndDate(), id);
 
+        Room oldRoom = reservation.getRoom();
+        if (!oldRoom.getId().equals(room.getId())) {
+            oldRoom.setStatus("Necesită Curățenie");
+            roomRepository.save(oldRoom);
+        }
+
         long numberOfNights = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate());
         double totalPrice = numberOfNights * room.getPrice();
 
@@ -120,6 +138,11 @@ public class ReservationService {
         reservation.setStartDate(request.getStartDate());
         reservation.setEndDate(request.getEndDate());
         reservation.setTotalPrice(totalPrice);
+
+        if (!request.getStartDate().isAfter(LocalDate.now())) {
+            room.setStatus("Ocupat");
+            roomRepository.save(room);
+        }
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
