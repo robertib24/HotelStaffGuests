@@ -478,6 +478,10 @@ function DashboardHome() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
+                await axios.post('http://localhost:8080/api/rooms/sync-status', {}, {
+                    headers: { 'Authorization': `Bearer ${auth.token}` }
+                });
+
                 const response = await axios.get('http://localhost:8080/api/dashboard/stats', {
                     headers: { 'Authorization': `Bearer ${auth.token}` }
                 });
