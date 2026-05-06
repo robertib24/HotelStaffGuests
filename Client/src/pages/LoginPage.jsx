@@ -1,259 +1,384 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Button, TextField, Typography, Box, Alert, Paper } from '@mui/material';
+import {
+    Button,
+    TextField,
+    Typography,
+    Box,
+    Alert,
+    Paper,
+    InputAdornment,
+    IconButton,
+    Divider,
+    CircularProgress,
+    useTheme,
+    alpha,
+} from '@mui/material';
 import HotelIcon from '@mui/icons-material/NightShelter';
-import { motion } from 'framer-motion';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import InsightsOutlinedIcon from '@mui/icons-material/InsightsOutlined';
+import { motion } from 'framer-motion';
+
+const FEATURES = [
+    {
+        icon: <BoltOutlinedIcon />,
+        title: 'Operațiuni rapide',
+        text: 'Gestionezi rezervări, camere și echipa în câteva clickuri.',
+    },
+    {
+        icon: <InsightsOutlinedIcon />,
+        title: 'Insights în timp real',
+        text: 'Statistici live pentru ocupare, venituri și flux oaspeți.',
+    },
+    {
+        icon: <ShieldOutlinedIcon />,
+        title: 'Roluri și securitate',
+        text: 'Acces granular pentru manageri, recepție, housekeeping & chef.',
+    },
+];
 
 function LoginPage() {
     const [email, setEmail] = useState('admin@hotel.com');
     const [password, setPassword] = useState('1234');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const auth = useAuth();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const success = await auth.login(email, password);
-        if (success) {
-            navigate('/');
-        } else {
-            setError('Email sau parolă incorectă.');
+        setLoading(true);
+        try {
+            const success = await auth.login(email, password);
+            if (success) {
+                navigate('/');
+            } else {
+                setError('Email sau parolă incorectă.');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
+    const fillDemo = (mail, pw) => {
+        setEmail(mail);
+        setPassword(pw);
+    };
+
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: { xs: 'column', md: 'row' } }}>
-            
+        <Box
+            sx={{
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                position: 'relative',
+                overflow: 'hidden',
+                bgcolor: 'background.default',
+            }}
+        >
+            {/* Left brand panel */}
             <Box
                 sx={{
-                    flex: 1,
+                    flex: { xs: 'unset', md: 1.1 },
+                    minHeight: { xs: 320, md: 'unset' },
+                    position: 'relative',
+                    color: '#fff',
+                    p: { xs: 4, md: 8 },
                     display: 'flex',
                     flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)',
-                    backgroundSize: '200% 200%',
-                    animation: 'gradientFlow 8s ease infinite',
-                    color: 'white',
-                    p: { xs: 4, md: 8 },
-                    textAlign: 'center',
-                    position: 'relative',
+                    justifyContent: 'space-between',
                     overflow: 'hidden',
-                    '@keyframes gradientFlow': {
-                        '0%, 100%': { backgroundPosition: '0% 50%' },
-                        '50%': { backgroundPosition: '100% 50%' }
-                    },
+                    background: `linear-gradient(135deg,
+                        ${theme.palette.primary.main} 0%,
+                        ${theme.palette.secondary.main} 60%,
+                        ${alpha(theme.palette.primary.main, 0.85)} 100%)`,
+                    backgroundSize: '200% 200%',
+                    animation: 'gradientShift 12s ease infinite',
                     '&::before': {
                         content: '""',
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-                        animation: 'float 6s ease-in-out infinite',
+                        inset: 0,
+                        background:
+                            'radial-gradient(circle at 22% 25%, rgba(255,255,255,0.18) 0, transparent 45%), radial-gradient(circle at 78% 75%, rgba(255,255,255,0.14) 0, transparent 50%)',
+                        animation: 'float 8s ease-in-out infinite',
+                        pointerEvents: 'none',
+                    },
+                    '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        inset: 0,
+                        background:
+                            'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.18) 100%)',
+                        pointerEvents: 'none',
                     },
                     '@keyframes float': {
                         '0%, 100%': { transform: 'translateY(0)' },
-                        '50%': { transform: 'translateY(-20px)' }
-                    }
+                        '50%': { transform: 'translateY(-12px)' },
+                    },
                 }}
             >
-                <motion.div
-                    initial={{ scale: 0, opacity: 0, rotate: -180 }}
-                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 150, damping: 12 }}
-                >
+                <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     <Box
                         sx={{
-                            width: 120,
-                            height: 120,
-                            borderRadius: '50%',
-                            background: 'rgba(255, 255, 255, 0.15)',
-                            backdropFilter: 'blur(20px)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            mb: 3,
-                            boxShadow: '0 12px 48px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.1)',
-                            border: '2px solid rgba(255, 255, 255, 0.2)',
-                            position: 'relative',
-                            zIndex: 1,
+                            width: 48,
+                            height: 48,
+                            borderRadius: 2.5,
+                            display: 'grid',
+                            placeItems: 'center',
+                            bgcolor: 'rgba(255,255,255,0.18)',
+                            border: '1px solid rgba(255,255,255,0.25)',
+                            backdropFilter: 'blur(12px)',
                         }}
                     >
-                        <motion.div
-                            animate={{ 
-                                rotate: [0, 10, -10, 0],
-                                scale: [1, 1.05, 1, 1]
-                            }}
-                            transition={{ 
-                                duration: 4, 
-                                repeat: Infinity,
-                                ease: "easeInOut"
+                        <HotelIcon sx={{ fontSize: 28 }} />
+                    </Box>
+                    <Box>
+                        <Typography sx={{ fontWeight: 800, letterSpacing: '-0.01em' }}>
+                            Hotel Admin
+                        </Typography>
+                        <Typography sx={{ fontSize: 12, opacity: 0.85 }}>
+                            Management Suite
+                        </Typography>
+                    </Box>
+                </Box>
+
+                <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 540 }}>
+                    <motion.div
+                        initial={{ opacity: 0, y: 24 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <Typography
+                            sx={{
+                                fontSize: { xs: 32, md: 44 },
+                                fontWeight: 800,
+                                lineHeight: 1.1,
+                                letterSpacing: '-0.025em',
+                                textShadow: '0 4px 24px rgba(0,0,0,0.18)',
+                                mb: 2,
                             }}
                         >
-                            <HotelIcon sx={{ fontSize: 64, color: 'white', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
-                        </motion.div>
+                            Hotelul tău, sub control. Modern. Vizual. Eficient.
+                        </Typography>
+                        <Typography sx={{ opacity: 0.92, fontSize: 16, lineHeight: 1.55, mb: 4 }}>
+                            Un panou unic pentru recepție, housekeeping, chef și management — cu
+                            statistici live și un design plăcut de utilizat.
+                        </Typography>
+                    </motion.div>
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {FEATURES.map((f, i) => (
+                            <motion.div
+                                key={f.title}
+                                initial={{ opacity: 0, x: -16 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 + i * 0.1 }}
+                            >
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1.5,
+                                        p: 1.5,
+                                        borderRadius: 2.5,
+                                        bgcolor: 'rgba(255,255,255,0.10)',
+                                        border: '1px solid rgba(255,255,255,0.18)',
+                                        backdropFilter: 'blur(8px)',
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            width: 36,
+                                            height: 36,
+                                            borderRadius: 2,
+                                            display: 'grid',
+                                            placeItems: 'center',
+                                            bgcolor: 'rgba(255,255,255,0.18)',
+                                        }}
+                                    >
+                                        {f.icon}
+                                    </Box>
+                                    <Box>
+                                        <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                                            {f.title}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: 12.5, opacity: 0.85 }}>
+                                            {f.text}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            </motion.div>
+                        ))}
                     </Box>
-                </motion.div>
-                
-                <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-                    <Typography component="h1" variant="h3" sx={{ fontWeight: 'bold', mb: 2, textShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-                        Hotel Admin
-                    </Typography>
-                </motion.div>
-                <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 300, textShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                        Gestionează-ți hotelul. Eficient și modern.
-                    </Typography>
-                </motion.div>
+                </Box>
+
+                <Box sx={{ position: 'relative', zIndex: 1, fontSize: 12, opacity: 0.85 }}>
+                    © {new Date().getFullYear()} Hotel Admin · Built with care
+                </Box>
             </Box>
 
+            {/* Right form */}
             <Box
                 sx={{
                     flex: 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    bgcolor: 'background.default',
-                    py: 8,
-                    px: 2
+                    py: { xs: 6, md: 8 },
+                    px: { xs: 2, sm: 4 },
                 }}
             >
-                <Paper 
+                <Paper
                     component={motion.div}
-                    initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                    initial={{ opacity: 0, y: 24, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.6, delay: 0.3, type: "spring", stiffness: 100 }}
-                    elevation={24}
+                    transition={{ duration: 0.5 }}
+                    elevation={0}
                     sx={{
                         width: '100%',
-                        maxWidth: '500px',
+                        maxWidth: 460,
                         p: { xs: 3, sm: 5 },
-                        borderRadius: 5,
-                        bgcolor: 'background.paper',
-                        border: '1.5px solid rgba(255, 255, 255, 0.08)',
-                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-                        backdropFilter: 'blur(20px)',
+                        borderRadius: 4,
                     }}
                 >
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        transition={{ delay: 0.5 }}
+                    <Typography
+                        component="h1"
+                        sx={{ fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', mb: 0.5 }}
                     >
-                        <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                            Autentificare
-                        </Typography>
-                    </motion.div>
-                    
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        transition={{ delay: 0.6 }}
-                    >
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 4, textAlign: 'center' }}>
-                            Bine ai revenit! Introdu detaliile contului tău.
-                        </Typography>
-                    </motion.div>
+                        Bine ai revenit <span style={{ display: 'inline-block' }}>👋</span>
+                    </Typography>
+                    <Typography sx={{ color: 'text.secondary', mb: 3.5, fontSize: 14.5 }}>
+                        Autentifică-te pentru a continua spre dashboard.
+                    </Typography>
 
-                    <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+                    <Box component="form" onSubmit={handleSubmit}>
                         {error && (
                             <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
+                                initial={{ opacity: 0, y: -8 }}
+                                animate={{ opacity: 1, y: 0 }}
                             >
                                 <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
                                     {error}
                                 </Alert>
                             </motion.div>
                         )}
-                        
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }} 
-                            animate={{ opacity: 1, y: 0 }} 
-                            transition={{ delay: 0.7 }}
-                        >
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                id="email"
-                                label="Adresă Email"
-                                name="email"
-                                autoComplete="email"
-                                autoFocus
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <EmailOutlinedIcon sx={{ color: 'action.active', mr: 1.5, fontSize: '20px' }} />
-                                    ),
-                                }}
-                            />
-                        </motion.div>
 
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }} 
-                            animate={{ opacity: 1, y: 0 }} 
-                            transition={{ delay: 0.8 }}
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="email"
+                            label="Adresă Email"
+                            name="email"
+                            autoComplete="email"
+                            autoFocus
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <EmailOutlinedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password"
+                            label="Parolă"
+                            type={showPassword ? 'text' : 'password'}
+                            id="password"
+                            autoComplete="current-password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <LockOutlinedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => setShowPassword((s) => !s)}
+                                            edge="end"
+                                            size="small"
+                                            tabIndex={-1}
+                                        >
+                                            {showPassword ? (
+                                                <VisibilityOffOutlinedIcon fontSize="small" />
+                                            ) : (
+                                                <VisibilityOutlinedIcon fontSize="small" />
+                                            )}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+
+                        <Button
+                            type="submit"
+                            fullWidth
+                            disabled={loading}
+                            variant="contained"
+                            sx={{ mt: 3, mb: 2.5, py: 1.4, fontSize: 15, fontWeight: 700 }}
                         >
-                            <TextField
-                                margin="normal"
-                                required
-                                fullWidth
-                                name="password"
-                                label="Parolă"
-                                type="password"
-                                id="password"
-                                autoComplete="current-password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <LockOutlinedIcon sx={{ color: 'action.active', mr: 1.5, fontSize: '20px' }} />
-                                    ),
+                            {loading ? (
+                                <CircularProgress size={22} thickness={5} sx={{ color: '#fff' }} />
+                            ) : (
+                                'Intră în cont'
+                            )}
+                        </Button>
+
+                        <Divider sx={{ my: 2, fontSize: 11, color: 'text.secondary' }}>
+                            CONTURI DEMO
+                        </Divider>
+
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => fillDemo('admin@hotel.com', '1234')}
+                                sx={{
+                                    justifyContent: 'flex-start',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
                                 }}
-                            />
-                        </motion.div>
-                        
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }} 
-                            animate={{ opacity: 1, y: 0 }} 
-                            transition={{ delay: 0.9 }}
-                        >
-                            <motion.div
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
                             >
-                                <Button
-                                    type="submit"
-                                    fullWidth
-                                    variant="contained"
-                                    sx={{
-                                        mt: 3,
-                                        mb: 2,
-                                        py: 1.5,
-                                        borderRadius: 2,
-                                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                        fontSize: '1rem',
-                                        fontWeight: 'bold',
-                                        textTransform: 'none',
-                                        boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
-                                        '&:hover': {
-                                            background: 'linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)',
-                                            boxShadow: '0 6px 25px rgba(102, 126, 234, 0.5)',
-                                        },
-                                    }}
-                                >
-                                    Intră în cont
-                                </Button>
-                            </motion.div>
-                        </motion.div>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
+                                    <span style={{ fontSize: 12.5 }}>Admin</span>
+                                    <span style={{ fontSize: 10.5, opacity: 0.7 }}>admin@hotel.com</span>
+                                </Box>
+                            </Button>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => fillDemo('manager@hotel.com', '1234')}
+                                sx={{
+                                    justifyContent: 'flex-start',
+                                    textTransform: 'none',
+                                    fontWeight: 600,
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
+                                    <span style={{ fontSize: 12.5 }}>Manager</span>
+                                    <span style={{ fontSize: 10.5, opacity: 0.7 }}>manager@hotel.com</span>
+                                </Box>
+                            </Button>
+                        </Box>
                     </Box>
                 </Paper>
             </Box>
